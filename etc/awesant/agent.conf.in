@@ -1,0 +1,30 @@
+output {
+    #redis {
+    #    type syslog
+    #    key syslog
+    #    host 127.0.0.1
+    #    port 6379
+    #    database 0
+    #}
+    screen {
+        type syslog
+        send_to stderr
+    }
+}
+
+input {
+    file {
+        type syslog
+        path /var/log/messages
+    }
+}
+
+logger {
+    #file {
+    #    filename /var/log/awesant/agent.conf
+    #    maxlevel info
+    #}
+    screen {
+        maxlevel info
+    }
+}

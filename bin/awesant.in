@@ -1,0 +1,42 @@
+#!@@PERL@@
+use strict;
+use warnings;
+use Awesant::Agent;
+use Getopt::Long qw(:config no_ignore_case);
+
+my $version   = "0.1";
+my $progname  = do { $0 =~ m!([^/]+)\z!; $1 };
+my $o_config  = "@@CONFIG@@";
+my $o_pidfile = "@@PIDFILE@@";
+my $o_help    = 0;
+my $o_version = 0;
+
+GetOptions(
+    "p|pidfile=s" => \$o_pidfile,
+    "c|config=s"  => \$o_config,
+    "h|help"      => \$o_help,
+    "v|version"   => \$o_version,
+) or exit 1;
+
+if ($o_help) {
+    print "\nUsage: $progname [ OPTIONS ]\n\n";
+    print "Options:\n\n";
+    print "-c, --config <file>\n";
+    print "    The path to the agent configuration.\n";
+    print "    Default: @@CONFIG@@\n";
+    print "-p, --pidfile <pidfile>\n";
+    print "    Default: @@PIDFILE@@\n";
+    print "    The path to the pid file.\n";
+    print "-h, --help\n";
+    print "    Print the help.\n";
+    print "-v, --version\n";
+    print "    Print the version number.\n\n";
+    exit 0;
+}
+
+if ($o_version) {
+    print "$progname v$version\n";
+    exit 0;
+}
+
+Awesant::Agent->run(config => $o_config, pidfile=> $o_pidfile);
