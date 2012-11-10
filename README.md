@@ -108,7 +108,14 @@ With this agent configuration your logstash should be configured as follows:
         }
     }
 
-# Options
+# Configuration options
 
 See the *Options.md files.
+
+Or you can look into the manpages
+
+    man Awesant::Output::Redis
+    man Awesant::Output::Screen
+    man Awesant::Input::File
+
 

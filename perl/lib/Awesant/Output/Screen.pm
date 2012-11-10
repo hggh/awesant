@@ -10,17 +10,9 @@ Awesant::Output::Screen - Send messages to the screen.
 
 =head1 DESCRIPTION
 
-=head1 METHODS
+=head1 OPTIONS
 
-=head2 new
-
-Create a new input object.
-
-=head3 Options
-
-=over 4
-
-=item send_to
+=head2 send_to
 
 Where to send the output.
 
@@ -32,7 +24,11 @@ Possible:
 
 Default: null
 
-=back
+=head1 METHODS
+
+=head2 new
+
+Create a new input object.
 
 =head2 push
 

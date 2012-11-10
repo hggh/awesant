@@ -217,6 +217,10 @@ sub load_input {
                 }
             }
 
+            if ($type eq "redis" && !defined $config->{key}) {
+                $config->{key} = $agent_config{type};
+            }
+
             $agent_config{path} = $config->{path} || "/";
 
             if ($type eq "file") {
