@@ -10,7 +10,7 @@ The path to the log file.
 
 Experimental feature.
 
-If the option C<save_position> is set to true then the last position
+If the option save_position is set to true then the last position
 of the log file is saved to a file. The inode and the byte position
 is stored. If Awesant is down then it can resume its works where it
 was stopped. This is useful if you don't want to lose less data as

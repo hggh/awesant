@@ -6,7 +6,7 @@
 
 Label to bind the output to inputs.
 
-## Global input parameter
+## Global input options
 
 ### type
 
