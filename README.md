@@ -35,7 +35,7 @@ Or create a RPM with
 
 ### Start and stop Awesant
 
-    /etc/init.d/logstash-agent [ start | stop | restart ]
+    /etc/init.d/awesant-agent [ start | stop | restart ]
 
 ### Configuration
 
