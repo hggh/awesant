@@ -17,6 +17,8 @@ to run Awesant on your machine. Let us have a look on what you need to install:
 You can install the packages with your favorite package manager or with cpan tool.
 
     cpan -i Log::Handler
+    cpan -i Params::Validate
+    cpan -i ...
 
 ## Installation
 
@@ -28,7 +30,7 @@ Just download the project and execute
 
 Or create a RPM with
 
-    rpm -ta awesant-$version.tar.gz
+    rpmbuild -ta awesant-$version.tar.gz
     rpm -i rpmbuild/RPMS/noarch/awesant...
 
 ## HowTo
@@ -43,11 +45,20 @@ The main configuration file of the Awesant agent is
 
     /etc/awesant/agent.conf
 
-The configuration style is very simple. You can define inputs and outputs.
+The configuration style is very simple. You can define inputs, outputs and a logger configuration.
 
 Inputs are the log files you want to ship. Outputs are the transports you want to use to ship the log files.
 
-Only files are currently supported as input and only redis and screen are currently supported for outputs.
+Currently supported inputs:
+
+    file
+
+Currently supported outputs:
+
+    redis
+    screen
+
+Example configuration:
 
     input {
         file {
@@ -66,9 +77,11 @@ Only files are currently supported as input and only redis and screen are curren
         redis {
             type syslog
             key syslog
-            server 127.0.0.1
+            host 127.0.0.1
             port 6379
             database 0
+            timeout 10
+            password foobared
         }
         screen {
             type syslog
@@ -94,4 +107,8 @@ With this agent configuration your logstash should be configured as follows:
             format => "json_event"
         }
     }
+
+# Options
+
+See the *Options.md files.
 

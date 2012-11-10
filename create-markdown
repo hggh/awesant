@@ -1,0 +1,27 @@
+#!/usr/bin/perl
+use strict;
+use warnings;
+
+my @modules = qw(
+    Awesant::Output::Redis
+    Awesant::Output::Screen
+    Awesant::Input::File
+);
+
+foreach my $mod (@modules) {
+    my $file = "perl/lib/$mod.pm";
+    $file =~ s!::!/!g;
+    open my $in, "<", $file or die $!;
+    my $content = do { local $/; <$in> };
+    close $in;
+    $content =~ s/.+=head1\sOPTIONS\s*\n(.+)=head1\sMETHODS.+/$1/s;
+    $content =~ s/=head2/###/g;
+    my $readme = "${mod}Options.md";
+    $readme =~ s/:://g;
+    $readme =~ s/^Awesant//;
+    open my $out, ">", $readme or die $!;
+    print $out "# $mod\n\n";
+    print $out "## Options\n\n";
+    print $out $content;
+    close $out;
+}
