@@ -1,6 +1,6 @@
 Summary: Awesant is a log shipper for logstash.
 Name: awesant
-Version: 0.1
+Version: 0.2
 Release: 1%{?dist}
 License: distributable
 Group: System Environment/Daemons
@@ -83,5 +83,9 @@ rm -rf %{buildroot}
 %{_mandir}/man?/Awesant::*
 
 %changelog
+* Sun Nov 11 2012 Jonny Schulz <js@bloonix.net> - 0.2-1
+- Fixed "Can't call method is_debug" in Output/Screen.pm.
+- Added the feature that multiple types can be set for outputs.
+- Deleted awesant.conf - this file will be build by make.
 * Thu Nov 08 2012 Jonny Schulz <js@bloonix.net> - 0.1-1
 - Initial package.
