@@ -109,6 +109,39 @@ With this agent configuration your logstash should be configured as follows:
         }
     }
 
+### Extended input and output configuration
+
+* It is possible to set a comma separated list of types for outputs.
+* It is possible to set wildcards for file inputs.
+
+As example if you has different inputs, such as
+
+    input {
+        file {
+            type apache-access-log
+            path /var/log/httpd/*access*log
+        }
+        file {
+            type syslog
+            path /var/log/messages
+        }
+    }
+
+then you can use one output for multiple inputs:
+
+    output {
+        redis {
+            type apache-access-log, syslog
+            key logstash
+            host 127.0.0.1
+        }
+    }
+
+In this case the redis-output is bound to the inputs 'apache-access-log'
+and 'syslog', but if the log events are pushed to the output then the
+type of the input is used for the json event. That means that '@type' is
+set to the type of the input, not of the output.
+
 # Configuration options
 
 See the *Options.md files.

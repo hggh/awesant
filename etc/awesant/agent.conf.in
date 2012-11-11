@@ -1,3 +1,10 @@
+input {
+    file {
+        type syslog
+        path /var/log/messages
+    }
+}
+
 output {
     #redis {
     #    type syslog
@@ -9,13 +16,6 @@ output {
     screen {
         type syslog
         send_to stderr
-    }
-}
-
-input {
-    file {
-        type syslog
-        path /var/log/messages
     }
 }
 
