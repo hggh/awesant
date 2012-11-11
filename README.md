@@ -45,7 +45,7 @@ The main configuration file of the Awesant agent is
 
     /etc/awesant/agent.conf
 
-The configuration style is very simple. You can define inputs, outputs and a logger configuration.
+The configuration style is very simple. You can define inputs, outputs, a logger and some global configuration parameter.
 
 Inputs are the log files you want to ship. Outputs are the transports you want to use to ship the log files.
 
@@ -59,6 +59,14 @@ Currently supported outputs:
     screen
 
 Example configuration:
+
+    # How often to poll inputs for new events.
+    # Default: 500 (ms)
+    poll 500
+
+    # How much lines to request from the inputs by each poll.
+    # Default: 100 (count)
+    lines 100
 
     input {
         file {
@@ -151,4 +159,10 @@ Or you can look into the manpages
     man Awesant::Output::Redis
     man Awesant::Output::Screen
     man Awesant::Input::File
+
+# TODOS
+
+* Add any encryption support to ship log files
+* Does we really need another transports? Redis is so cool :-)
+* Some Debian foo to build a deb package
 

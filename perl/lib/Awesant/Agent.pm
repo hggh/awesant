@@ -483,7 +483,7 @@ sub validate_config {
         },
         lines => {
             type => Params::Validate::SCALAR,
-            default => 1000,
+            default => 100,
         },
         output => {
             type => Params::Validate::HASHREF,
