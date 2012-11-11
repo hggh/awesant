@@ -21,7 +21,7 @@ input {
 
 logger {
     #file {
-    #    filename /var/log/awesant/agent.conf
+    #    filename /var/log/awesant/agent.log
     #    maxlevel info
     #}
     screen {

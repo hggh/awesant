@@ -104,6 +104,7 @@ With this agent configuration your logstash should be configured as follows:
             port => 6379
             db => 0
             key => "syslog"
+            type => "syslog"
             format => "json_event"
         }
     }
@@ -117,5 +118,4 @@ Or you can look into the manpages
     man Awesant::Output::Redis
     man Awesant::Output::Screen
     man Awesant::Input::File
-
 

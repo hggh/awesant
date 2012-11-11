@@ -1,3 +1,9 @@
+awesant (0.2) released at 2012-11-11
+
+    * Fixed "Can't call method is_debug" in Output/Screen.pm.
+    * Added the feature that multiple types can be set for outputs.
+    * Deleted awesant.conf - this file will be build by make.
+
 awesant (0.1) released at 2012-11-08
 
     * Initial release.

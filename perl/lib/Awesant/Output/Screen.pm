@@ -72,7 +72,7 @@ use warnings;
 use Log::Handler;
 use Params::Validate qw();
 
-our $VERSION = "0.1";
+our $VERSION = "0.2";
 
 sub new {
     my $class = shift;
@@ -87,6 +87,8 @@ sub new {
         open my $fh, ">>", "/dev/null";
         $self->{fh} = $fh;
     }
+
+    $self->{log} = Log::Handler->get_logger("awesant");
 
     return $self;
 }

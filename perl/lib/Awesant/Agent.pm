@@ -161,7 +161,7 @@ use Sys::Hostname;
 use Time::HiRes qw();
 use Awesant::Config;
 
-our $VERSION = "0.1";
+our $VERSION = "0.2";
 
 sub run {
     my ($class, %args) = @_;
@@ -190,25 +190,31 @@ sub load_output {
         my $module = $self->load_module(output => $output);
 
         foreach my $config (@{$outputs->{$output}}) {
-            my $type = delete $config->{type};
+            my $types = delete $config->{type};
 
-            if (!defined $type || $type !~ /\w/) {
-                die "missing mandatory parameter 'type' for output '$type'";
+            if (!defined $types || $types !~ /\w/) {
+                die "missing mandatory parameter 'type' for output '$types'";
             }
 
-            push @{$self->{output}->{$type}}, $module->new($config);
+            my $object = $module->new($config);
+
+            foreach my $type (split /,/, $types) {
+                $type =~ s/^\s+//;
+                $type =~ s/\s+\z//;
+                push @{$self->{output}->{$type}}, $object;
+            }
         }
     }
 }
 
 sub load_input {
     my $self = shift;
-    my $input = $self->config->{input};
+    my $inputs = $self->config->{input};
 
-    foreach my $type (keys %$input) {
-        my $module = $self->load_module(input => $type);
+    foreach my $input (keys %$inputs) {
+        my $module = $self->load_module(input => $input);
 
-        foreach my $config (@{$input->{$type}}) {
+        foreach my $config (@{$inputs->{$input}}) {
             my %agent_config;
 
             foreach my $param (qw/type tags add_field/) {
@@ -217,13 +223,9 @@ sub load_input {
                 }
             }
 
-            if ($type eq "redis" && !defined $config->{key}) {
-                $config->{key} = $agent_config{type};
-            }
-
             $agent_config{path} = $config->{path} || "/";
 
-            if ($type eq "file") {
+            if ($input eq "file") {
                 foreach my $path (split /,/, $config->{path}) {
                     $path =~ s/^\s+//;
                     $path =~ s/\s+\z//;
