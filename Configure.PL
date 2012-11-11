@@ -48,7 +48,7 @@ if ($o_help) {
     exit 0;
 }
 
-open my $fh, ">", "Makefile.config" or die "Unable to override Makefile - $!";
+open my $fh, ">", "Makefile.config" or die "Unable to overwrite Makefile - $!";
 
 print "Writing Makefile.config ...\n";
 
