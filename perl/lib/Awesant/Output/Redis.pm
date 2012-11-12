@@ -110,7 +110,7 @@ use IO::Socket::INET;
 use Log::Handler;
 use Params::Validate qw();
 
-our $VERSION = "0.1";
+our $VERSION = "0.2";
 
 sub new {
     my $class = shift;
