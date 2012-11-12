@@ -48,8 +48,8 @@ The method C<load_input> does in the first step the same like C<load_output>.
 It looks for input modules. As example if the input C<file> is configured,
 then it tries to load the module C<Awesant::Input::File>.
 
-As next each output module that was pre-loaded is bound the inputs. This is done
-using the parameter C<type>.
+As next each output module that was pre-loaded is bound to the inputs.
+This is done using the parameter C<type>.
 
 =head2 load_module
 
