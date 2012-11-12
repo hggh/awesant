@@ -82,7 +82,7 @@ All clear? :-)
 
 =head2 daemonize
 
-Start the endless loop and calls C<run_agent> is an eval block.
+Start the endless loop and calls C<run_agent> in an eval block.
 
 =head2 run_agent
 
