@@ -167,36 +167,36 @@ sub connect {
         Proto    => "tcp",
     );
 
-    if ($self->{sock}) {
-        $self->{sock}->autoflush(1);
-
-        $self->log->notice("connected to redis server $self->{host}:$self->{port}");
-
-        if ($self->{password}) {
-            $self->log->notice("send auth to redis server $self->{host}:$self->{port}");
-
-            $self->_send($self->{auth_client})
-                or die "unable to auth at redis database";
-        }
-
-        $self->log->notice(
-            "select database $self->{database} on",
-            "redis server $self->{host}:$self->{port}"
-        );
-
-        $self->_send($self->{select_database})
-            or die "unable to select redis database";
-
-        $self->log->notice(
-            "successfully selected database $self->{database}",
-            "on redis server $self->{host}:$self->{port}",
-        );
-
-        return $self->{sock};
+    if (!$self->{sock}) {
+        $self->log->error("unable to connect to redis server $self->{host}:$self->{port} - $!");
+        return undef;
     }
 
-    $self->log->error("unable to connect to redis server $self->{host}:$self->{port} - $!");
-    return undef;
+    $self->{sock}->autoflush(1);
+
+    $self->log->notice("connected to redis server $self->{host}:$self->{port}");
+
+    if ($self->{password}) {
+        $self->log->notice("send auth to redis server $self->{host}:$self->{port}");
+
+        $self->_send($self->{auth_client})
+            or die "unable to auth at redis database";
+    }
+
+    $self->log->notice(
+        "select database $self->{database} on",
+        "redis server $self->{host}:$self->{port}"
+    );
+
+    $self->_send($self->{select_database})
+        or die "unable to select redis database";
+
+    $self->log->notice(
+        "successfully selected database $self->{database}",
+        "on redis server $self->{host}:$self->{port}",
+    );
+
+    return $self->{sock};
 }
 
 sub push {
