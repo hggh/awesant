@@ -299,13 +299,14 @@ sub _send {
     if ($@) {
         $self->log->error($@);
     } elsif (!defined $response) {
-        $self->log->error("lost connection to redis server $self->{host}:$self->{port}");
+        $self->log->error("no response received from redis server $self->{host}:$self->{port}");
     } elsif ($response =~ /^\-ERR/) {
         $self->log->error("redis server returns an error: $response");
     } else {
         $self->log->error("unknown response from redis server: $response");
     }
 
+    # Reset the complete connection.
     if ($self->{sock}) {
         close($self->{sock});
         $self->{sock} = undef;
