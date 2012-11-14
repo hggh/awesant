@@ -1,6 +1,6 @@
 Summary: Awesant is a log shipper for logstash.
 Name: awesant
-Version: 0.2
+Version: 0.3
 Release: 1%{?dist}
 License: distributable
 Group: System Environment/Daemons
