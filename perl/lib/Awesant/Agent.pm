@@ -417,7 +417,7 @@ sub prepare_message {
     my ($self, $input, $line) = @_;
     my $json = $self->{json};
 
-    my $timestamp = POSIX::strftime("%Y-%m-%dT%H:%M:%S.%z", localtime(time));
+    my $timestamp = POSIX::strftime("%Y-%m-%dT%H:%M:%S%z", localtime(time));
     $timestamp =~ s/(\d{2})(\d{2})\z/$1:$2/;
 
     my %logstash = (
