@@ -1,3 +1,9 @@
+awesant (0.3) released at 2012-11-14
+
+    * Fixed timestamp formatting.
+    * Modified an confusing error message.
+    * Some code improvements in Output/Redis.pm.
+
 awesant (0.2) released at 2012-11-11
 
     * Fixed "Can't call method is_debug" in Output/Screen.pm.

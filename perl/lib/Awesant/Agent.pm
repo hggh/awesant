@@ -161,7 +161,7 @@ use Sys::Hostname;
 use Time::HiRes qw();
 use Awesant::Config;
 
-our $VERSION = "0.2";
+our $VERSION = "0.3";
 
 sub run {
     my ($class, %args) = @_;

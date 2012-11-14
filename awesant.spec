@@ -83,6 +83,10 @@ rm -rf %{buildroot}
 %{_mandir}/man?/Awesant::*
 
 %changelog
+* Sun Nov 11 2012 Jonny Schulz <js@bloonix.net> - 0.3-1
+- Fixed timestamp formatting.
+- Modified an confusing error message.
+- Some code improvements in Output/Redis.pm.
 * Sun Nov 11 2012 Jonny Schulz <js@bloonix.net> - 0.2-1
 - Fixed "Can't call method is_debug" in Output/Screen.pm.
 - Added the feature that multiple types can be set for outputs.
