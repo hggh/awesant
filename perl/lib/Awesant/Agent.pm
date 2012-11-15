@@ -588,7 +588,7 @@ sub validate_agent_config {
                     my (\$event) = \@_;
                     if (\$event->{'$ref->{key}'} =~ m!$ref->{match}!) {
                         \$event->{'\@fields'}->{'$field'} = \"$ref->{concat}\";
-                    } else {
+                    } elsif ('$ref->{default}') {
                         \$event->{'\@fields'}->{'$field'} = '$ref->{default}';
                     }
                 }";
@@ -626,7 +626,7 @@ sub validate_add_field_match {
         },
         default => {
             type => Params::Validate::SCALAR,
-            default => "unknown",
+            optional => 1,
         },
     });
 
