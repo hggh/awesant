@@ -65,12 +65,16 @@ and fetch the domain name from the @source_path:
         type apache-error-log
         path /var/log/apache2/*/*/error.log
         add_field {
-            domain {                                    # the field name to add
-               field @source_path                       # the field name to use for the regexp
-               match ([a-z]+\.[a-z]+)/([a-z]+)/[^/]+$   # the perl regular expression
-               concat $2.$1                             # how to concat the matches with $1, $2, $3 ...
-               default common                           # what value should be set if the regexp does not match
-                                                        #    the parameter "default" is optional
+            domain {                                    # The field name to add.
+               field @source_path                       # The field name to use for the regexp.
+                                                        # Format: A-Za-z_
+               match ([a-z]+\.[a-z]+)/([a-z]+)/[^/]+$   # The perl regular expression.
+                                                        # Format: no limitation
+               concat $2.$1                             # How to concat the matches with $1, $2, $3 ...
+                                                        # Format: double quotes are not allowed
+               default common                           # What value should be set if the regexp does not match
+                                                        # The parameter "default" is optional.
+                                                        # Format: single quotes are not allowed
             }
         }
     }

@@ -583,15 +583,16 @@ sub validate_agent_config {
     if (defined $options{__add_field}) {
         foreach my $field (keys %{$options{__add_field}}) {
             my $ref = $options{__add_field}{$field};
-            my $func = "
-                sub {
-                    my (\$event) = \@_;
-                    if (\$event->{'$ref->{key}'} =~ m!$ref->{match}!) {
-                        \$event->{'\@fields'}->{'$field'} = \"$ref->{concat}\";
-                    } elsif ('$ref->{default}') {
-                        \$event->{'\@fields'}->{'$field'} = '$ref->{default}';
-                    }
-                }";
+
+            # The code generation. I'm sorry that it's a bit unreadable.
+            my $func = "sub { my (\$e) = \@_; if (\$e->{'$ref->{field}'} =~ m!$ref->{match}!) { ";
+            $func .= "\$e->{'\@fields'}->{'$field'} = \"$ref->{concat}\"; }";
+            if (defined $ref->{default}) {
+                $func .= " else { \$e->{'\@fields'}->{'$field'} = '$ref->{default}'; } ";
+            }
+            $func .= "}";
+
+            # Eval the code.
             my $code = eval $func;
             push @{$options{__add_field_func}}, $func;
             push @{$options{__add_field_code}}, $code;
@@ -617,15 +618,18 @@ sub validate_add_field_match {
     my %options = Params::Validate::validate(@_, {
         field => {
             type => Params::Validate::SCALAR,
+            regex => qr/^\w+\z/,
         },
         match => {
             type => Params::Validate::SCALAR,
         },
         concat => {
             type => Params::Validate::SCALAR,
+            regex => qr/^[^"]+\z/,
         },
         default => {
             type => Params::Validate::SCALAR,
+            regex => qr/^[^']+\z/,
             optional => 1,
         },
     });
