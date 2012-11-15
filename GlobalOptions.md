@@ -32,8 +32,6 @@ Value: STRING (a comma separated list) or a HASH
 
 You can do cool things with the add_field parameter if you want.
 
-Let me show you it with an example.
-
 As example you have a bunch of logfiles:
 
     /var/log/apache2/mydomain1.example/foo/error.log
@@ -65,14 +63,14 @@ and fetch the domain name from the @source_path:
         type apache-error-log
         path /var/log/apache2/*/*/error.log
         add_field {
-            domain {                                    # The field name to add.
-               field @source_path                       # The field name to use for the regexp.
+            domain {                                    # The new field to add.
+               field @source_path                       # The field to use for the regexp.
                                                         # Format: A-Za-z_
                match ([a-z]+\.[a-z]+)/([a-z]+)/[^/]+$   # The perl regular expression.
                                                         # Format: no limitation
-               concat $2.$1                             # How to concat the matches with $1, $2, $3 ...
+               concat $2.$1                             # Concatenate the matches with $1, $2, $3 ...
                                                         # Format: double quotes are not allowed
-               default common                           # What value should be set if the regexp does not match
+               default common                           # Set a default value if the regexp does not match.
                                                         # The parameter "default" is optional.
                                                         # Format: single quotes are not allowed
             }
