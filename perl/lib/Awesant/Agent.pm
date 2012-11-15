@@ -161,7 +161,7 @@ use Sys::Hostname;
 use Time::HiRes qw();
 use Awesant::Config;
 
-our $VERSION = "0.3";
+our $VERSION = "0.4";
 
 sub run {
     my ($class, %args) = @_;
@@ -220,6 +220,12 @@ sub load_input {
             foreach my $param (qw/type tags add_field/) {
                 if (exists $config->{$param}) {
                     $agent_config{$param} = delete $config->{$param};
+                }
+            }
+
+            foreach my $field (keys %{$agent_config{add_field}}) {
+                if (ref $agent_config{add_field}{$field} eq "HASH") {
+                    $agent_config{__add_field}{$field} = delete $agent_config{add_field}{$field};
                 }
             }
 
@@ -321,7 +327,7 @@ sub run_agent {
                     my $bytes  = 0;
 
                     while (my $line = shift @{$ref->{lines}}) {
-                        my $json = $self->prepare_message($input->{config}, $line);
+                        my $json = $self->prepare_message($config, $line);
 
                         if (!$output->push($json)) {
                             unshift @{$ref->{lines}}, $line;
@@ -378,7 +384,7 @@ sub run_agent {
             my @prepared;
 
             foreach my $line (@$lines) {
-                my $json = $self->prepare_message($input->{config}, $line);
+                my $json = $self->prepare_message($config, $line);
                 push @prepared, $json;
             }
 
@@ -420,7 +426,7 @@ sub prepare_message {
     my $timestamp = POSIX::strftime("%Y-%m-%dT%H:%M:%S%z", localtime(time));
     $timestamp =~ s/(\d{2})(\d{2})\z/$1:$2/;
 
-    my %logstash = (
+    my $logstash = {
         '@timestamp'   => $timestamp,
         '@source'      => "file://" . $self->{hostname} . $input->{path},
         '@source_host' => $self->{hostname},
@@ -429,9 +435,15 @@ sub prepare_message {
         '@tags'        => $input->{tags},
         '@fields'      => $input->{add_field},
         '@message'     => $line,
-    );
+    };
 
-    return $json->encode(\%logstash);
+    if ($input->{__add_field}) {
+        foreach my $code (@{$input->{__add_field_code}}) {
+            &$code($logstash);
+        }
+    }
+
+    return $json->encode($logstash);
 }
 
 sub get_config {
@@ -536,11 +548,23 @@ sub validate_agent_config {
                     | Params::Validate::ARRAYREF,
             default => { },
         },
+        __add_field => {
+            type => Params::Validate::HASHREF,
+            optional => 1,
+        },
         path => {
             type => Params::Validate::SCALAR,
             default => "/",
         },
     });
+
+    # add_field => {
+    #     domain => {
+    #         key    => '@source_path',
+    #         match  => "([a-z]+\.[a-z]+)/([a-z]+)/[^/]+$",
+    #         concat => "$2.$1",
+    #     }
+    # }
 
     if (defined $options{add_field}) {
         if (ref $options{add_field} eq "ARRAY") {
@@ -556,6 +580,24 @@ sub validate_agent_config {
         }
     }
 
+    if (defined $options{__add_field}) {
+        foreach my $field (keys %{$options{__add_field}}) {
+            my $ref = $options{__add_field}{$field};
+            my $func = "
+                sub {
+                    my (\$event) = \@_;
+                    if (\$event->{'$ref->{key}'} =~ m!$ref->{match}!) {
+                        \$event->{'\@fields'}->{'$field'} = \"$ref->{concat}\";
+                    } else {
+                        \$event->{'\@fields'}->{'$field'} = '$ref->{default}';
+                    }
+                }";
+            my $code = eval $func;
+            push @{$options{__add_field_func}}, $func;
+            push @{$options{__add_field_code}}, $code;
+        }
+    }
+
     if (defined $options{tags} && ref $options{tags} ne "ARRAY") {
         my $tags = $options{tags};
         $options{tags} = [ ];
@@ -565,6 +607,28 @@ sub validate_agent_config {
             push @{$options{tags}}, $tag;
         }
     }
+
+    return \%options;
+}
+
+sub validate_add_field_match {
+    my $self = shift;
+
+    my %options = Params::Validate::validate(@_, {
+        field => {
+            type => Params::Validate::SCALAR,
+        },
+        match => {
+            type => Params::Validate::SCALAR,
+        },
+        concat => {
+            type => Params::Validate::SCALAR,
+        },
+        default => {
+            type => Params::Validate::SCALAR,
+            default => "unknown",
+        },
+    });
 
     return \%options;
 }
