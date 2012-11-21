@@ -126,7 +126,7 @@ sub get_lastpos {
     my $libdir = $self->{libdir};
     my $inode = "";
 
-    $self->{lastpos} = (stat($file))[7];
+    $self->{lastpos} = -e $file ? (stat($file))[7] : 0;
 
     if (!$self->{save_position}) {
         return;
@@ -145,7 +145,7 @@ sub get_lastpos {
             $inode =~ s/^0+//;
             $lastpos =~ s/^0+//;
 
-            if ((stat($file))[1] eq $inode) {
+            if (-e $file && (stat($file))[1] eq $inode) {
                 $self->{lastpos} = $lastpos;
             }
         }
