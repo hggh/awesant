@@ -64,8 +64,9 @@ and fetch the domain name from the @source_path:
         path /var/log/apache2/*/*/error.log
         add_field {
             domain {                                    # The new field to add.
-               field @source_path                       # The field to use for the regexp.
                                                         # Format: A-Za-z_
+               field @source_path                       # The field to use for the regexp.
+                                                        # This should be a @-field.
                match ([a-z]+\.[a-z]+)/([a-z]+)/[^/]+$   # The perl regular expression.
                                                         # Format: no limitation
                concat $2.$1                             # Concatenate the matches with $1, $2, $3 ...
