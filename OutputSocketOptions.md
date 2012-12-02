@@ -6,6 +6,15 @@
 
 The hostname or ip address of the tcp server.
 
+It's possible to set a comma separated list of failover hosts.
+
+    socket {
+        host active-server, failover-server-1, failover-server-2
+        port 4711
+    }
+
+If the connection to one host failed then a connection to the next server is established.
+
 Default: 127.0.0.1
 
 ### port
@@ -23,6 +32,8 @@ Default: 10
 ### connect_timeout
 
 The timeout in seconds to connect to the tcp server.
+
+Default: 10
 
 ### proto
 
@@ -42,6 +53,12 @@ Example:
 
 Default: no default
 
+### persistent
+
+Use persistent connections or not.
+
+Default: yes
+
 ### ssl_ca_file, ssl_cert_file, ssl_key_file
 
 If you want to use ssl connections to the server you can set the path to your ca, certificate and key file.
@@ -50,7 +67,7 @@ This options are equivalent to the options of IO::Socket::SSL.
 
 See cpan http://search.cpan.org/~sullr/IO-Socket-SSL/.
 
-Default: no set
+Default: no default
 
 ### ssl_passwd_cb
 

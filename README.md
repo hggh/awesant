@@ -14,6 +14,8 @@ to run Awesant on your machine. Let us have a look on what you need to install:
     Time::HiRes
     JSON
 
+If you want to transport logs via SSL and the Socket output then you need to install IO::Socket::SSL as well.
+
 You can install the packages with your favorite package manager or with cpan tool.
 
     cpan -i Log::Handler
@@ -158,6 +160,7 @@ Or you can look into the manpages
 
     man Awesant::Output::Redis
     man Awesant::Output::Screen
+    man Awesant::Output::Socket
     man Awesant::Input::File
 
 # TODOS

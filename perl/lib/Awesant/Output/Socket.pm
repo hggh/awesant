@@ -69,6 +69,12 @@ Example:
 
 Default: no default
 
+=head2 persistent
+
+Use persistent connections or not.
+
+Default: yes
+
 =head2 ssl_ca_file, ssl_cert_file, ssl_key_file
 
 If you want to use ssl connections to the server you can set the path to your ca, certificate and key file.
@@ -166,7 +172,7 @@ sub connect {
 
     # If the socket is still active, then just return true.
     # This works only if the sock is set to undef on errors.
-    if ($self->{sock}) {
+    if ($self->{sock} && $self->{persistent}) {
         return 1;
     }
 
@@ -331,6 +337,11 @@ sub validate {
             type => Params::Validate::SCALAR,
             optional => 1,
         },
+        persistent => {
+            type => Params::Validate::SCALAR,
+            regex => qr/^(?:yes|no|0|1)\z/,
+            default => "yes",
+        },
         ssl_ca_file => {
             type => Params::Validate::SCALAR,
             optional => 1,
@@ -348,6 +359,10 @@ sub validate {
             optional => 1,
         },
     });
+
+    if ($options{persistent} eq "no") {
+        $options{persistent} = 0;
+    }
 
     if ($options{ssl_cert_file} && $options{ssl_key_file}) {
         require IO::Socket::SSL;
