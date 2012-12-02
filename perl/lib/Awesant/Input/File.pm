@@ -221,15 +221,17 @@ sub check_logfile {
 
     # Check if the logfile exists.
     if (!-e $file) {
-        $self->log->debug("the log file '$file' does not exists any more");
+        $self->log->info("the log file '$file' does not exists any more");
         close $fhlog;
+        $self->{fhlog} = undef;
         return 0;
     }
 
     # Check if the inode has changed, because it's possible
     # that logrotate.d rotates the log file.
     if ($inode != (stat($file))[1]) {
-        $self->log->debug("inode of file '$file' changed - closing file handle");
+        $self->log->info("inode of file '$file' changed - closing file handle");
+        $self->{fhlog} = undef;
         close $fhlog;
         return 0;
     }
@@ -238,7 +240,7 @@ sub check_logfile {
     # read is higher than the file size. It's possible that
     # the logfile was flushed.
     if ((stat($file))[7] < $self->{lastpos}) {
-        $self->log->debug("the size of file '$file' shrinks - seeking back");
+        $self->log->info("the size of file '$file' shrinks - seeking back");
         seek($fhlog, 0, 0);
         $self->{lastpos} = 0;
     } 
@@ -254,7 +256,8 @@ sub pull {
     my $max_lines = $opts{lines} || 1;
     my $lines = [ ];
     my $fhpos = $self->{fhpos};
-    my $fhlog = $self->open_logfile or return $lines;
+    my $fhlog = $self->open_logfile
+        or return $lines;
 
     while (my $line = <$fhlog>) {
         chomp $line;

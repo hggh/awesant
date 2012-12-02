@@ -110,7 +110,7 @@ Removes the PID file.
 
 Create the logger object. As logger C<Log::Handler> is used.
 
-=head2 validate_config, validate_agent_config
+=head2 validate_config, validate_agent_config, validate_add_field_match
 
 Validate the configuration.
 
