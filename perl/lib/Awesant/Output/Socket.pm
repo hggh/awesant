@@ -1,6 +1,6 @@
 =head1 NAME
 
-Awesant::Output::Socket - Send messages to a Socket database.
+Awesant::Output::Socket - Send messages to a tcp socket.
 
 =head1 SYNOPSIS
 
@@ -20,13 +20,13 @@ This transport module connects to a tcp socket and ships data plain or via ssl.
 
 =head2 host
 
-The hostname or ip address of the Socket server.
+The hostname or ip address of the tcp server.
 
 Default: 127.0.0.1
 
 =head2 port
 
-The port number where the Socket server is listen on.
+The port number where the tcp server is listen on.
 
 Default: no default
 
@@ -82,11 +82,11 @@ Create a new output object.
 
 =head2 connect
 
-Connect to the redis database.
+Connect to the tcp server.
 
 =head2 push
 
-Push data to redis via LPUSH command.
+Push data to the tcp server.
 
 =head2 validate
 

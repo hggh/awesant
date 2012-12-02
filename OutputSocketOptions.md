@@ -4,13 +4,13 @@
 
 ### host
 
-The hostname or ip address of the Socket server.
+The hostname or ip address of the tcp server.
 
 Default: 127.0.0.1
 
 ### port
 
-The port number where the Socket server is listen on.
+The port number where the tcp server is listen on.
 
 Default: no default
 
