@@ -116,6 +116,7 @@ sub new {
     $self->{reached_end_of_file} = 0;
     $self->get_lastpos;
     $self->open_logfile;
+    $self->log->info("$class initialized");
 
     return $self;
 }
