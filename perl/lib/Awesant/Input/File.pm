@@ -105,7 +105,7 @@ use Fcntl qw( :flock O_WRONLY O_CREAT O_RDONLY );
 use Params::Validate qw();
 use Log::Handler;
 
-our $VERSION = "0.1";
+our $VERSION = "0.2";
 
 sub new {
     my $class = shift;
