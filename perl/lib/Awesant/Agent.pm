@@ -286,6 +286,12 @@ sub daemonize {
         }
     };
 
+    # Ignoring signal PIPE by default. Signal pipe occurs by
+    # reading on closed filehandles or sockets.
+    $SIG{PIPE} = sub {
+        $self->log->trace(info => "ignoring signal PIPE", @_);
+    };
+
     $SIG{HUP} = "IGNORE";
     $SIG{TERM} = sub { $self->{done} = 1 };
 
