@@ -5,6 +5,7 @@ use warnings;
 my @modules = qw(
     Awesant::Output::Redis
     Awesant::Output::Screen
+    Awesant::Output::Socket
     Awesant::Input::File
 );
 
