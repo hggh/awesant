@@ -22,6 +22,15 @@ This transport module connects to a tcp socket and ships data plain or via ssl.
 
 The hostname or ip address of the tcp server.
 
+It's possible to set a comma separated list of failover hosts.
+
+    socket {
+        host active-server, failover-server-1, failover-server-2
+        port 4711
+    }
+
+If the connection to one host failed then a connection to the next server is established.
+
 Default: 127.0.0.1
 
 =head2 port
@@ -39,6 +48,8 @@ Default: 10
 =head2 connect_timeout
 
 The timeout in seconds to connect to the tcp server.
+
+Default: 10
 
 =head2 proto
 
