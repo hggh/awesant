@@ -77,7 +77,7 @@ This options are equivalent to the options of IO::Socket::SSL.
 
 See cpan http://search.cpan.org/~sullr/IO-Socket-SSL/.
 
-Default: no set
+Default: no default
 
 =head2 ssl_passwd_cb
 
