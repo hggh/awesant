@@ -86,6 +86,15 @@ Start the endless loop and calls C<run_agent> in an eval block.
 
 =head2 run_agent
 
+This method is just a wrapper and calls C<run_log_shipper> in an eval block.
+
+=head2 run_server
+
+This methods creates some process groups for each input and just calls C<run_agent>
+for each group after the workers are forked.
+
+=head2 run_log_shipper
+
 The main logic of the Awesant agent. It requests the inputs for data to
 forward the data to the outputs.
 
@@ -93,6 +102,22 @@ forward the data to the outputs.
 
 Each log line is passed to C<prepare_message> and a nice formatted
 JSON string is returned, ready for Logstash.
+
+=head2 reap_children
+
+Reap died sub processes.
+
+=head2 spawn_children
+
+Fork new children if less children than the configured workers are running.
+
+=head2 kill_children
+
+Kill all children on signal term.
+
+=head2 sig_child_handler
+
+A handler to reap children.
 
 =head2 get_config
 
@@ -130,6 +155,7 @@ Just an accessor to the logger.
     POSIX
     Sys::Hostname
     Time::HiRes
+    Class::Accessor::Fast
 
 =head1 EXPORTS
 
@@ -156,23 +182,38 @@ use warnings;
 use Log::Handler;
 use Params::Validate qw();
 use JSON;
-use POSIX qw();
+use POSIX qw(:sys_wait_h);
 use Sys::Hostname;
 use Time::HiRes qw();
 use Awesant::Config;
+use base qw(Class::Accessor::Fast);
 
-our $VERSION = "0.4";
+# On Windows fork() is not really available.
+# If the agent will be started on windows
+# then awesant runs only as single process.
+# TODO: implement threading?
+use constant IS_WIN32 => $^O =~ /Win32/i;
+
+# Just some simple accessors
+__PACKAGE__->mk_accessors(qw/config log process_group/);
+
+our $VERSION = "0.5";
 
 sub run {
     my ($class, %args) = @_;
 
     my $self = bless {
-        done => 0,
-        args => \%args,
-        json => JSON->new(),
+        args     => \%args, # the command line arguments
+        done     => 0,      # a flag to stop the daemon on some signals
+        child    => { },    # store the pids of each child
+        reaped   => { },    # store the pids of each child that was reaped
+        inputs   => [ ],    # store the inputs in a array ref
+        outputs  => { },    # store the outputs in a hash ref by type
+        json     => JSON->new(),
         hostname => Sys::Hostname::hostname(),
     }, $class;
 
+    # The main workflow.
     $self->get_config;
     $self->write_pidfile;
     $self->create_logger;
@@ -187,21 +228,34 @@ sub load_output {
     my $outputs = $self->config->{output};
 
     foreach my $output (keys %$outputs) {
+        # At first the output module is required.
+        # Example: redis => Awesant/Output/Redis.pm
         my $module = $self->load_module(output => $output);
 
         foreach my $config (@{$outputs->{$output}}) {
+            # Option "type" is used by the agent and must be
+            # deleted from the output configuration.
             my $types = delete $config->{type};
 
-            if (!defined $types || $types !~ /\w/) {
-                die "missing mandatory parameter 'type' for output '$types'";
+            # Type is an mandatory parameter. The type is overwritten
+            # if incoming json_events has @type set.
+            if (!defined $types) {
+                die "missing mandatory parameter 'type' of output '$output'";
             }
 
+            # Only a-zA-Z_0-9 is allowed.
+            if (!length $types) {
+                die "no value passed for parameter 'type' of output '$output'";
+            }
+
+            # Create a new output object.
             my $object = $module->new($config);
 
+            # Multiple types are allowed for outputs.
             foreach my $type (split /,/, $types) {
                 $type =~ s/^\s+//;
                 $type =~ s/\s+\z//;
-                push @{$self->{output}->{$type}}, $object;
+                push @{$self->{outputs}->{$type}}, $object;
             }
         }
     }
@@ -212,25 +266,36 @@ sub load_input {
     my $inputs = $self->config->{input};
 
     foreach my $input (keys %$inputs) {
+        # At first load the input modules.
+        # Example: file => Awesant/Input/File.pm
         my $module = $self->load_module(input => $input);
 
         foreach my $config (@{$inputs->{$input}}) {
-            my %agent_config;
 
-            foreach my $param (qw/type tags add_field/) {
+            # Split the agent configuration parameter from the
+            # parameter for the input module.
+            my %agent_config;
+            foreach my $param (qw/type tags add_field workers/) {
                 if (exists $config->{$param}) {
                     $agent_config{$param} = delete $config->{$param};
                 }
             }
 
+            # If the add_field value is a hash then it can contains code
+            # instead of a simple string. In this case the code must be
+            # executed for every json event.
             foreach my $field (keys %{$agent_config{add_field}}) {
                 if (ref $agent_config{add_field}{$field} eq "HASH") {
                     $agent_config{__add_field}{$field} = delete $agent_config{add_field}{$field};
                 }
             }
 
+            # A path should be set.
             $agent_config{path} = $config->{path} || "/";
 
+            # The file input can only process on single file, but if a wildcard
+            # is used within the path or a comma separated list of files is passed
+            # it's necessary to create an input object for each file.
             if ($input eq "file") {
                 foreach my $path (split /,/, $config->{path}) {
                     $path =~ s/^\s+//;
@@ -239,7 +304,7 @@ sub load_input {
                         my %c = %$config;
                         my %a = %agent_config;
                         $a{path} = $c{path} = $file;
-                        push @{$self->{input}}, {
+                        push @{$self->{inputs}}, {
                             time   => scalar Time::HiRes::gettimeofday(),
                             object => $module->new(\%c),
                             config => $self->validate_agent_config(\%a),
@@ -247,7 +312,7 @@ sub load_input {
                     }
                 }
             } else {
-                push @{$self->{input}}, {
+                push @{$self->{inputs}}, {
                     time   => scalar Time::HiRes::gettimeofday(),
                     object => $module->new($config),
                     config => $self->validate_agent_config(\%agent_config),
@@ -260,6 +325,8 @@ sub load_input {
 sub load_module {
     my ($self, $io, $type) = @_;
 
+    # output { redis { } }
+    #   = Awesant::Output::Redis
     my $module = join("::",
         "Awesant",
         ucfirst($io),
@@ -267,36 +334,102 @@ sub load_module {
     );
 
     eval "require $module";
-    die $@ if $@;
+
+    if ($@) {
+        # The module name may be uppercase.
+        # output { tcp { } }
+        #    = Awesant::Output::TCP
+        $module = join("::",
+            "Awesant",
+            ucfirst($io),
+            uc($type),
+        );
+        eval "require $module";
+        die $@ if $@;
+    }
+
     return $module;
 }
 
 sub daemonize {
     my $self = shift;
 
-    # This is the best way to determine dirty code :)
-    $SIG{__WARN__} = sub {
-        $self->log->warning(@_);
-    };
+    # For debugging.
+    $SIG{__DIE__}  = sub { $self->log->trace(error   => @_) };
+    $SIG{__WARN__} = sub { $self->log->trace(warning => @_) };
 
-    # A full backtrace if someone calls die()
-    $SIG{__DIE__} = sub {
-        if ($_[0] !~ /^signal TERM received/) {
-            $self->log->trace(error => @_);
+    # Ignoring sig hup and pipe by default, because we have no
+    # reload mechanism and don't want to break on pipe signals.
+    $SIG{HUP} = $SIG{PIPE} = "IGNORE";
+
+    # If one of the following signals are catched then the daemon
+    # should stop normally and reap all children first.
+    $SIG{TERM} = $SIG{INT} = sub { $self->{done} = 1 };
+
+    if (IS_WIN32) {
+        $self->run_agent;
+    } else {
+        $self->run_server;
+    }
+}
+
+sub run_server {
+    my $self = shift;
+    my $child = $self->{child};
+    my $reaped = $self->{reaped};
+    my $group = 0;
+
+    # Split the inputs into process groups.
+    foreach my $input (@{$self->{inputs}}) {
+        if ($input->{config}->{workers}) {
+            $group++;
+            $self->{process_group}->{$group} = {
+                workers => $input->{config}->{workers},
+                inputs  => [ $input ],
+                child   => { },
+            };
+        } else {
+            $self->{process_group}->{0}->{workers} ||= 1;
+            $self->{process_group}->{0}->{child} ||= { };
+            push @{$self->{process_group}->{0}->{inputs}}, $input;
         }
-    };
+    }
 
-    # Ignoring signal PIPE by default. Signal pipe occurs by
-    # reading on closed filehandles or sockets.
-    $SIG{PIPE} = sub {
-        $self->log->trace(info => "ignoring signal PIPE", @_);
-    };
-
-    $SIG{HUP} = "IGNORE";
-    $SIG{TERM} = sub { $self->{done} = 1 };
+    # Handle died children.
+    $SIG{CHLD} = sub { $self->sig_child_handler(@_) };
 
     while ($self->{done} == 0) {
-        eval { $self->run_agent };
+        # Reap died children.
+        $self->reap_children;
+        # Spawn new children.
+        $self->spawn_children;
+        # Sleep a while
+
+        foreach my $group (keys %{ $self->process_group }) {
+            my $process_group = $self->process_group->{$group};
+
+            $self->log->debug(
+                scalar keys %{$process_group->{child}},
+                "processes running for process group $group:",
+                keys %{$process_group->{child}},
+            );
+        }
+
+        Time::HiRes::usleep(500_000);
+    }
+
+    $self->kill_children;
+}
+
+sub run_agent {
+    my ($self, $inputs) = @_;
+
+    if ($inputs) {
+        $self->{inputs} = $inputs;
+    }
+
+    while ($self->{done} == 0) {
+        eval { $self->run_log_shipper };
 
         if ($self->{done} == 0) {
             sleep 3;
@@ -304,10 +437,10 @@ sub daemonize {
     }
 }
 
-sub run_agent {
+sub run_log_shipper {
     my $self = shift;
     my $poll = $self->config->{poll} / 1000;
-    my $inputs = $self->{input};
+    my $inputs = $self->{inputs};
     my $max_lines = $self->config->{lines};
     my $messurement = Time::HiRes::gettimeofday();
     my $count_lines = 0;
@@ -364,7 +497,7 @@ sub run_agent {
             }
 
             my $lines = $input->{object}->pull(lines => 100);
-            my $outputs = $self->{output}->{$type};
+            my $outputs = $self->{outputs}->{$type};
 
             if (!defined $lines || !@$lines) {
                 $input->{time} = Time::HiRes::gettimeofday() + $poll;
@@ -490,6 +623,100 @@ sub create_logger {
     }
 }
 
+sub spawn_children {
+    my $self = shift;
+
+    foreach my $group (keys %{ $self->process_group }) {
+        my $process_group = $self->process_group->{$group};
+        my $current_worker = scalar keys %{$process_group->{child}};
+        my $wanted_worker = $process_group->{workers};
+
+        if ($current_worker < $wanted_worker) {
+            for (1..$wanted_worker - $current_worker) {
+                # Fork a new child.
+                my $pid = fork;
+
+                if ($pid) {
+                    # If $pid is set, then it's the parent.
+                    $self->{child}->{$pid} = $group;
+                    # The pid is stored to the process group just to
+                    # count how many processes are running for the group.
+                    $process_group->{child}->{$pid} = $group;
+                    # Hoa yeah! A new perl machine was born! .-)
+                    $self->log->info("forked child $pid for server $group");
+                } elsif (!defined $pid) {
+                    # If the $pid is undefined then fork failed.
+                    die "unable to fork - $!";
+                } else {
+                    # If the pid is defined then it's the child.
+                    eval { $self->run_agent($process_group->{inputs}) };
+                    exit($? ? 9 : 0);
+                }
+            }
+        }
+    }
+}
+
+sub reap_children {
+    my $self = shift;
+    my $child = $self->{child};
+    my $reaped = $self->{reaped};
+    my @reaped = keys %$reaped;
+
+    foreach my $pid (@reaped) {
+        my $group = delete $child->{$pid};
+        delete $self->process_group->{$group}->{child}->{$pid};
+        delete $reaped->{$pid};
+    }
+}
+
+sub kill_children {
+    my $self  = shift;
+    my $child = $self->{child};
+    my @chld  = keys %$child;
+
+    # Don't TERM the daemon. At first we reap all children.
+    local $SIG{TERM} = "IGNORE";
+
+    # Give the children 15 seconds time to stop.
+    my $wait = time + 15;
+
+    # Try to kill the agents soft.
+    $self->log->info("send sig term to children", @chld);
+    kill 15, @chld;
+
+    while (@chld && $wait > time) {
+        $self->log->info("wait for children", @chld);
+        sleep 1;
+        $self->reap_children;
+        @chld = keys %$child;
+    }
+
+    # All left children are killed hard.
+    if (scalar keys %$child) {
+        @chld = keys %$child;
+        $self->log->info("send sig kill to children", @chld);
+        kill 9, @chld;
+    }
+}
+
+sub sig_child_handler {
+    my $self = shift;
+
+    while ((my $child = waitpid(-1, WNOHANG)) > 0) {
+        if ($? > 0) {
+            $self->log->error("child $child died: $?");
+        } else {
+            $self->log->notice("child $child died: $?");
+        }
+
+        # Store the PID to delete the it later from $self->{child}
+        $self->{reaped}->{$child} = $child;
+    }
+
+    $SIG{CHLD} = sub { $self->sig_child_handler(@_) };
+}
+
 sub validate_config {
     my $self = shift;
 
@@ -548,6 +775,11 @@ sub validate_agent_config {
                     | Params::Validate::ARRAYREF,
             default => [ ],
         },
+        format => {
+            type => Params::Validate::SCALAR,
+            regex => qr/^(?:plain|json_event)\z/,  
+            default => "plain",
+        },
         add_field => {
             type => Params::Validate::SCALAR
                     | Params::Validate::HASHREF
@@ -561,6 +793,11 @@ sub validate_agent_config {
         path => {
             type => Params::Validate::SCALAR,
             default => "/",
+        },
+        workers => {
+            type => Params::Validate::SCALAR,
+            regex => qr/^\d+\z/,
+            default => 0,
         },
     });
 
@@ -641,18 +878,6 @@ sub validate_add_field_match {
     });
 
     return \%options;
-}
-
-sub config {
-    my $self = shift;
-
-    return $self->{config};
-}
-
-sub log {
-    my $self = shift;
-
-    return $self->{log};
 }
 
 1;
