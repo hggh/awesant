@@ -16,6 +16,10 @@ Label to bind the input to outputs.
 
 Value: STRING
 
+### workers
+
+How many processes to fork for this input.
+
 ### tags
 
 Add any number of arbitrary tags to your event.

@@ -1,6 +1,7 @@
-awesant (0.5) released at 2012-12-02
+awesant (0.5) released at 2012-12-05
 
-    * Added Socket Output.
+    * Added a input for tcp sockets.
+    * Now process groups are created for inputs that have the parameter 'workers' configured.
 
 awesant (0.4) released at 2012-11-15
 
