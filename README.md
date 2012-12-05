@@ -10,6 +10,7 @@ to run Awesant on your machine. Let us have a look on what you need to install:
     Log::Handler
     Params::Validate
     IO::Socket
+    IO::Select
     Sys::Hostname
     Time::HiRes
     JSON
