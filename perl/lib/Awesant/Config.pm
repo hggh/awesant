@@ -135,11 +135,11 @@ sub _parse_config {
         # and whitespaces from the begin and the end
         # of each line.
         $line =~ s/[\r\n]+\z//;
-        $line =~ s/\s+#.+//;
         $line =~ s/^\s*#.*//;
+        $line =~ s/\s+#.+//;
         $line =~ s/\\#/#/g;
-        $line =~ s/^\s*//;
-        $line =~ s/\s\z//;
+        $line =~ s/^\s+//;
+        $line =~ s/\s+\z//;
 
         # Comments and whitespaces was removed.
         # Empty lines will be ignored.
