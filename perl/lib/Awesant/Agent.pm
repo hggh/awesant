@@ -275,7 +275,7 @@ sub load_input {
             # Split the agent configuration parameter from the
             # parameter for the input module.
             my %agent_config;
-            foreach my $param (qw/type tags add_field workers/) {
+            foreach my $param (qw/type tags add_field workers format/) {
                 if (exists $config->{$param}) {
                     $agent_config{$param} = delete $config->{$param};
                 }
@@ -465,6 +465,18 @@ sub run_log_shipper {
         # will be skipped until %failed is empty. That means that
         # no events will be read from the inputs.
         foreach my $input (@$inputs) {
+            # Some data for benchmarks. The count of lines and bytes are printed each second.
+            if ($benchmark) {
+                my $delta = sprintf("%.6f", Time::HiRes::gettimeofday() - $messurement);
+                if ($delta > 1) {
+                    $count_bytes = sprintf("%.3fM", $count_bytes > 0 ? $count_bytes / 1_048_576 : 0);
+                    $self->log->notice("processed $count_lines lines / $count_bytes bytes in $delta seconds");
+                    $messurement = Time::HiRes::gettimeofday();
+                    $count_lines = 0;
+                    $count_bytes = 0;
+                }
+            }
+
             # Check if it's time to process the input.
             if ($input->{time} - Time::HiRes::gettimeofday() > 0) {
                 next;
@@ -496,7 +508,8 @@ sub run_log_shipper {
                     # Process each line until the array is empty.
                     $self->log->info("try to process", scalar @{$ref->{lines}}, "events for output type $otype");
                     while (my $line = shift @{$ref->{lines}}) {
-                        my ($otype, $event) = $self->prepare_message($input->{config}, $line);
+                        my ($otype, $event) = $self->prepare_message($input->{config}, $line)
+                            or next;
 
                         # If the output is not available then the last line
                         # is stored back to the array.
@@ -507,6 +520,8 @@ sub run_log_shipper {
 
                         $count += 1;
                         $bytes += length($line);
+                        $count_lines += 1;
+                        $count_bytes += $bytes;
                     }
 
                     if ($count) {
@@ -520,12 +535,15 @@ sub run_log_shipper {
                     # output returns an error. In this case the output
                     # is stored back to the %failed hash.
                     if (@{$ref->{lines}}) {
-                        $count = scalar @{$ref->{lines}};
-                        $bytes = length join("", @{$ref->{lines}});
-                        $self->log->error(
-                            "output $otype returns an error again -",
-                            "held $count lines with $bytes bytes in stash"
-                        );
+                        # The error message should only be logged if the output died again.
+                        if ($count) {
+                            $count = scalar @{$ref->{lines}};
+                            $bytes = length join("", @{$ref->{lines}});
+                            $self->log->error(
+                                "output $otype returns an error again -",
+                                "held $count lines with $bytes bytes in stash"
+                            );
+                        }
                         unshift @{$failed{$itype}}, $ref;
                         last;
                     }
@@ -542,7 +560,7 @@ sub run_log_shipper {
             }
 
             # Get events from the input.
-            $self->log->info("pull lines from input type $itype");
+            $self->log->debug("pull lines from input type $itype");
             my $lines = $input->{object}->pull(lines => $max_lines);
 
             # If no lines exists, just jump to the next input and
@@ -555,18 +573,22 @@ sub run_log_shipper {
             # If the input returns events then the global interval
             # is set to now, so the sleep value should be 0.
             $time = Time::HiRes::gettimeofday();
-            $self->log->info("pulled", scalar @$lines, "from input type $itype");
+            $self->log->debug("pulled", scalar @$lines, "from input type $itype");
 
             # Process each event and store each event by the output type.
             my (%prepared_events, %lines_by_type);
             while (my $line = shift @$lines) {
-                my ($otype, $event) = $self->prepare_message($input->{config}, $line);
+                my ($otype, $event) = $self->prepare_message($input->{config}, $line)
+                    or next;
                 push @{$prepared_events{$otype}}, $event;
                 push @{$lines_by_type{$otype}}, $line;
             }
 
             foreach my $otype (keys %prepared_events) {
                 my $events = $prepared_events{$otype};
+                if (!exists $outputs->{$otype}) {
+                    $self->log->warning("received events from input type $itype with an non existent output type $otype");
+                }
                 foreach my $output (@{$outputs->{$otype}}) {
                     for (my $i=0; $i <= $#{$events}; $i++) {
                         if (!$output->push($events->[$i])) {
@@ -582,6 +604,10 @@ sub run_log_shipper {
                                 output => $output,
                                 lines  => $left,
                             };
+                            last;
+                        } else {
+                            $count_lines += 1;
+                            $count_bytes += length $lines_by_type{$otype}[$i];
                         }
                     }
                 }
@@ -601,11 +627,15 @@ sub prepare_message {
     my ($self, $input, $line) = @_;
     my ($event, $type, $timestamp);
 
-    $self->log->info("prepare message for input $input->{type}");
+    $self->log->debug("prepare message for input $input->{type}");
     $self->log->debug("event: $line");
 
     if ($input->{format} eq "json_event") {
-        $event = $self->json->decode($line);
+        eval { $event = $self->json->decode($line) };
+        if ($@) {
+            $self->log->error("unable to decode json event for input $input->{type}:", $@);
+            return ();
+        }
         $event->{'@type'} ||= $input->{type};
         push @{$event->{'@tags'}}, @{$input->{tags}};
         foreach my $field (keys %{$input->{add_field}}) {
@@ -693,7 +723,7 @@ sub spawn_children {
                     # count how many processes are running for the group.
                     $process_group->{child}->{$pid} = $group;
                     # Hoa yeah! A new perl machine was born! .-)
-                    $self->log->info("forked child $pid for server $group");
+                    $self->log->info("forked child $pid for process group $group");
                 } elsif (!defined $pid) {
                     # If the $pid is undefined then fork failed.
                     die "unable to fork - $!";

@@ -101,6 +101,10 @@ Create a new output object.
 
 Connect to the tcp server.
 
+=head2 disconnect
+
+Disconnect from the socket.
+
 =head2 push
 
 Push data to the tcp server.
@@ -236,6 +240,15 @@ sub connect {
     return undef;
 }
 
+sub disconnect {
+    my $self = shift;
+    my $socket = $self->{sock};
+
+    if ($socket) {
+        close $socket;
+    }
+}
+
 sub push {
     my ($self, $data) = @_;
 
@@ -310,15 +323,6 @@ sub push {
     $self->log->error("unknown response from server: $response");
     $self->{sock} = undef;
     return undef;
-}
-
-sub disconnect {
-    my $self = shift;
-    my $socket = $self->{sock};
-
-    if ($socket) {
-        close $socket;
-    }
 }
 
 sub validate {

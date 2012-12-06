@@ -27,7 +27,7 @@ fi
 __check_awesant_agent() {
     DAEMON_EXIST=""
     if test -e "$PIDFILE" ; then
-        DAEMON_PID=$(cat $PIDFILE)
+        DAEMON_PID=$(cat $PIDFILE 2>/dev/null)
         if test -n "$DAEMON_PID" ; then
             DAEMON_EXIST=$(ps $DAEMON_PID | grep awesant)
         fi
