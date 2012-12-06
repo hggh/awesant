@@ -51,6 +51,14 @@ See cpan http://search.cpan.org/~sullr/IO-Socket-SSL/.
 
 Default: no default
 
+=head2 response
+
+Send a response for each received event.
+
+    response => "ok"
+
+Then the string "ok" is send back to the sender.
+
 =head1 METHODS
 
 =head2 new
@@ -162,6 +170,7 @@ sub open_socket {
 
 sub pull {
     my ($self, %opts) = @_;
+    my $response = $self->{response};
     my $count = $opts{lines} || 1;
     my @lines = ();
 
@@ -182,6 +191,7 @@ sub pull {
             next;
         }
 
+        print $fh $response;
         chomp($request);
         push @lines, $request;
         $count--;
@@ -207,6 +217,10 @@ sub validate {
         port => {
             type => Params::Validate::SCALAR,
             regex => qr/^\d+\z/,
+        },
+        response => {
+            type => Params::Validate::SCALAR,
+            optional => 1,
         },
         proto => {
             type => Params::Validate::SCALAR,
