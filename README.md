@@ -157,12 +157,12 @@ set to the type of the input, not of the output.
 
 See the *Options.md files.
 
-    https://github.com/bloonix/awesant/blob/master/GlobalOptions.md
-    https://github.com/bloonix/awesant/blob/master/InputFileOptions.md
-    https://github.com/bloonix/awesant/blob/master/InputSocketOptions.md
-    https://github.com/bloonix/awesant/blob/master/OutputRedisOptions.md
-    https://github.com/bloonix/awesant/blob/master/OutputScreenOptions.md
-    https://github.com/bloonix/awesant/blob/master/OutputSocketOptions.md
+* <https://github.com/bloonix/awesant/blob/master/GlobalOptions.md>
+* <https://github.com/bloonix/awesant/blob/master/InputFileOptions.md>
+* <https://github.com/bloonix/awesant/blob/master/InputSocketOptions.md>
+* <https://github.com/bloonix/awesant/blob/master/OutputRedisOptions.md>
+* <https://github.com/bloonix/awesant/blob/master/OutputScreenOptions.md>
+* <https://github.com/bloonix/awesant/blob/master/OutputSocketOptions.md>
 
 Or you can look into the manpages
 
