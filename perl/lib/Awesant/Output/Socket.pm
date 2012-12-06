@@ -39,6 +39,15 @@ The port number where the tcp server is listen on.
 
 Default: no default
 
+=head2 auth
+
+With this option it's possible to set a username and password, if you want to
+authorize the connection to the host.
+
+    user:password
+
+See also the documentation of Awesant::Input::Socket.
+
 =head2 timeout
 
 The timeout in seconds to transport data to the tcp server.
@@ -209,6 +218,14 @@ sub connect {
             alarm($self->{connect_timeout});
             $sock = $module->new(%{$self->{sockopts}});
             die $! unless $sock;
+            if ($self->{auth}) {
+                print $sock $self->{auth}, "\n";
+                my $ok = <$sock>;
+                chomp($ok);
+                if (!$ok) {
+                    die "not authorized to connect to server";
+                }
+            }
             alarm(0);
         };
 
@@ -349,6 +366,10 @@ sub validate {
             type => Params::Validate::SCALAR,
             regex => qr/^tcp\z/,
             default => "tcp",
+        },
+        auth => {
+            type => Params::Validate::SCALAR,
+            optional => 1,
         },
         response => {
             type => Params::Validate::SCALAR,

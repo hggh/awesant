@@ -35,6 +35,15 @@ The port number to listen on.
 
 Default: no default
 
+=head2 auth
+
+With this option it's possible to set a username and password if you want
+that each client have to authorize.
+
+    user:password
+
+See also the documentation of Awesant::Output::Socket.
+
 =head2 proto
 
 The protocol to use. At the moment only tcp is allowed.
@@ -179,7 +188,37 @@ sub pull {
     foreach my $fh (@ready) {
         if ($fh == $self->socket) {
             my $client = $self->socket->accept;
-            $self->select->add($client);
+            next unless $client;
+            my $addr = $client->peerhost || "n/a";
+
+            if ($self->{auth}) {
+                eval {
+                    local $SIG{__DIE__} = sub { alarm(0) };
+                    local $SIG{ALRM} = sub { die "timeout" };
+                    alarm(5);
+                    my $authstr = <$client>;
+                    chomp $authstr;
+                    if ($authstr ne $self->{auth}) {
+                        print $client "0\n";
+                        die "noauth";
+                    }
+                    print $client "1\n";
+                    alarm(0);
+                };
+                if ($@) {
+                    my $err = $@;
+                    if ($err =~ /^timeout/) {
+                        $self->log->warning("timed out connection from $addr as waited for auth string");
+                    } else {
+                        $self->log->warning("unauthorized connection from $addr");
+                    }
+                } else {
+                    $self->select->add($client);
+                }
+            } else {
+                $self->select->add($client);
+            }
+
             next;
         }
 
@@ -191,7 +230,10 @@ sub pull {
             next;
         }
 
-        print $fh $response;
+        if (defined $response) {
+            print $fh "$response\n";
+        }
+
         chomp($request);
         push @lines, $request;
         $count--;
@@ -217,6 +259,10 @@ sub validate {
         port => {
             type => Params::Validate::SCALAR,
             regex => qr/^\d+\z/,
+        },
+        auth => {
+            type => Params::Validate::SCALAR,
+            optional => 1,
         },
         response => {
             type => Params::Validate::SCALAR,
