@@ -16,6 +16,29 @@ Label to bind the input to outputs.
 
 Value: STRING
 
+### format
+
+This option is equivalent to the option 'format' of logstash inputs.
+
+Possible values: "plain", "json_event"
+
+If the format is a json_event, then all necessary key-value pairs should exists.
+
+    Example for a file input (/var/log/httpd/access.log):
+
+    @timestamp    =>  a well formatted timestamp!
+    @source       =>  file://hostname/var/log/httpd/access.log
+    @source_host  =>  hostname
+    @source_path  =>  /var/log/httpd/access.log
+    @type         =>  any_type
+    @fields       =>  { some => "fields" }
+    @tags         =>  [ "some", "tags" ]
+    @message      =>  "the message"
+
+If '@type' is set, then it overwrites the type of the input, otherwise the type is used from the configuration.
+
+Default: plain
+
 ### workers
 
 How many processes to fork for this input.
