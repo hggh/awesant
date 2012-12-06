@@ -145,7 +145,7 @@ use IO::Socket::INET;
 use Log::Handler;
 use Params::Validate qw();
 
-our $VERSION = "0.1";
+our $VERSION = "0.2";
 
 sub new {
     my $class = shift;
@@ -283,6 +283,10 @@ sub push {
         alarm(0);
     };
 
+    if (!$self->{persistent}) {
+        $self->close_socket;
+    }
+
     if ($@) {
         $self->log->error($@);
         $self->{sock} = undef;
@@ -306,6 +310,15 @@ sub push {
     $self->log->error("unknown response from server: $response");
     $self->{sock} = undef;
     return undef;
+}
+
+sub disconnect {
+    my $self = shift;
+    my $socket = $self->{sock};
+
+    if ($socket) {
+        close $socket;
+    }
 }
 
 sub validate {

@@ -266,7 +266,10 @@ sub validate {
 sub DESTROY {
     my $self = shift;
     my $socket = $self->{socket};
-    close $socket;
+
+    if ($socket) {
+        close $socket;
+    }
 }
 
 1;
