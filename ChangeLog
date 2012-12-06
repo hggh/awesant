@@ -1,12 +1,9 @@
-awesant (0.6) released at 2012-12-06
+awesant (0.5) released at 2012-12-06
 
     * Added a disconnect message to Output/Socket.pm.
     * Added some benchmarking options to Agent.pm.
     * Fixed "cat pidfile" in the init script.
     * Added the new parameter 'format' for incoming messages.
-
-awesant (0.5) released at 2012-12-05
-
     * Added a input for tcp sockets.
     * Now process groups are created for inputs that have the parameter 'workers' configured.
 

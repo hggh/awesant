@@ -83,6 +83,13 @@ rm -rf %{buildroot}
 %{_mandir}/man?/Awesant::*
 
 %changelog
+* Thu Dec 06 2012 Jonny Schulz <js@bloonix.net> - 0.5-1
+- Added a disconnect message to Output/Socket.pm.
+- Added some benchmarking options to Agent.pm.
+- Fixed "cat pidfile" in the init script.
+- Added the new parameter 'format' for incoming messages.
+- Added a input for tcp sockets.
+- Now process groups are created for inputs that have the parameter 'workers' configured.
 * Sun Nov 15 2012 Jonny Schulz <js@bloonix.net> - 0.4-1
 - Implemented a extended add_field feature.
 * Sun Nov 11 2012 Jonny Schulz <js@bloonix.net> - 0.3-1

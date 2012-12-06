@@ -23,6 +23,15 @@ The port number where the tcp server is listen on.
 
 Default: no default
 
+### auth
+
+With this option it's possible to set a username and password, if you want to
+authorize the connection to the host.
+
+    user:password
+
+See also the documentation of Awesant::Input::Socket.
+
 ### timeout
 
 The timeout in seconds to transport data to the tcp server.
