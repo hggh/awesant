@@ -54,12 +54,18 @@ Inputs are the log files you want to ship. Outputs are the transports you want t
 
 Currently supported inputs:
 
-    file
+* File: <https://github.com/bloonix/awesant/blob/master/InputFileOptions.md>
+* Socket: <https://github.com/bloonix/awesant/blob/master/InputSocketOptions.md>
 
 Currently supported outputs:
 
-    redis
-    screen
+* Redis: <https://github.com/bloonix/awesant/blob/master/OutputRedisOptions.md>
+* Screen: <https://github.com/bloonix/awesant/blob/master/OutputScreenOptions.md>
+* Socket: <https://github.com/bloonix/awesant/blob/master/OutputSocketOptions.md>
+
+Global configuration options:
+
+* <https://github.com/bloonix/awesant/blob/master/GlobalOptions.md>
 
 Example configuration:
 
@@ -153,27 +159,9 @@ and 'syslog', but if the log events are pushed to the output then the
 type of the input is used for the json event. That means that '@type' is
 set to the type of the input, not of the output.
 
-# Configuration options
-
-See the *Options.md files.
-
-* <https://github.com/bloonix/awesant/blob/master/GlobalOptions.md>
-* <https://github.com/bloonix/awesant/blob/master/InputFileOptions.md>
-* <https://github.com/bloonix/awesant/blob/master/InputSocketOptions.md>
-* <https://github.com/bloonix/awesant/blob/master/OutputRedisOptions.md>
-* <https://github.com/bloonix/awesant/blob/master/OutputScreenOptions.md>
-* <https://github.com/bloonix/awesant/blob/master/OutputSocketOptions.md>
-
-Or you can look into the manpages
-
-    man Awesant::Output::Redis
-    man Awesant::Output::Screen
-    man Awesant::Output::Socket
-    man Awesant::Input::File
-
 # TODOS
 
 * Add any encryption support to ship log files
 * Does we really need another transports? Redis is so cool :-)
 * Some Debian foo to build a deb package
-
+* Add proto udp to Input/Socket.pm and Output/Socket.pm.
