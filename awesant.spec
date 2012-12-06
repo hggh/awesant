@@ -18,9 +18,11 @@ Requires: perl
 Requires: perl(Log::Handler)
 Requires: perl(Params::Validate)
 Requires: perl(IO::Socket)
+Requires: perl(IO::Select)
 Requires: perl(JSON)
 Requires: perl(Sys::Hostname)
 Requires: perl(Time::HiRes)
+Requires: perl(Class::Accessor::Fast)
 AutoReqProv: no
 
 %define initdir %{_sysconfdir}/rc.d/init.d
