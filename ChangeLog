@@ -6,6 +6,7 @@ awesant (0.5) released at 2012-12-06
     * Added the new parameter 'format' for incoming messages.
     * Added a input for tcp sockets.
     * Now process groups are created for inputs that have the parameter 'workers' configured.
+    * Kicked option ssl_passwd_cb.
 
 awesant (0.4) released at 2012-11-15
 

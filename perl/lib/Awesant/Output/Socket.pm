@@ -78,6 +78,8 @@ Example:
 
 Default: no default
 
+See also the documentation of Awesant::Input::Socket.
+
 =head2 persistent
 
 Use persistent connections or not.
@@ -91,12 +93,6 @@ If you want to use ssl connections to the server you can set the path to your ca
 This options are equivalent to the options of IO::Socket::SSL.
 
 See cpan http://search.cpan.org/~sullr/IO-Socket-SSL/.
-
-Default: no default
-
-=head2 ssl_passwd_cb
-
-The password for the certificate, if one exists.
 
 Default: no default
 
@@ -158,7 +154,7 @@ use IO::Socket::INET;
 use Log::Handler;
 use Params::Validate qw();
 
-our $VERSION = "0.2";
+our $VERSION = "0.3";
 
 sub new {
     my $class = shift;
@@ -392,10 +388,6 @@ sub validate {
             type => Params::Validate::SCALAR,
             optional => 1,
         },
-        ssl_passwd_cb => {
-            type => Params::Validate::SCALAR,
-            optional => 1,
-        },
     });
 
     if ($options{persistent} eq "no") {
@@ -418,7 +410,6 @@ sub validate {
         ssl_ca_file   => 'SSL_ca_file',
         ssl_cert_file => 'SSL_cert_file',
         ssl_key_file  => 'SSL_key_file',
-        ssl_passwd_cb => 'SSL_passwd_cb',
     );
 
     while (my ($opt, $modopt) = each %sockopts) {
