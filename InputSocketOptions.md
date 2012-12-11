@@ -47,3 +47,5 @@ Send a response for each received event.
 
 Then the string "ok" is send back to the sender.
 
+See also the documentation of Awesant::Output::Socket.
+

@@ -62,6 +62,8 @@ Example:
 
 Default: no default
 
+See also the documentation of Awesant::Input::Socket.
+
 ### persistent
 
 Use persistent connections or not.
@@ -75,12 +77,6 @@ If you want to use ssl connections to the server you can set the path to your ca
 This options are equivalent to the options of IO::Socket::SSL.
 
 See cpan http://search.cpan.org/~sullr/IO-Socket-SSL/.
-
-Default: no default
-
-### ssl_passwd_cb
-
-The password for the certificate, if one exists.
 
 Default: no default
 
