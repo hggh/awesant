@@ -570,7 +570,7 @@ sub run_log_shipper {
                 next;
             }
 
-            # If the input returns events then the global interval
+            # If the input return events then the global interval
             # is set to now, so the sleep value should be 0.
             $time = Time::HiRes::gettimeofday();
             $self->log->debug("pulled", scalar @$lines, "from input type $itype");
@@ -772,7 +772,7 @@ sub kill_children {
         @chld = keys %$child;
     }
 
-    # All left children are killed hard.
+    # All left children will be killed hard.
     if (scalar keys %$child) {
         @chld = keys %$child;
         $self->log->info("send sig kill to children", @chld);
