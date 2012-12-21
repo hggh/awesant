@@ -403,7 +403,6 @@ sub run_server {
         $self->reap_children;
         # Spawn new children.
         $self->spawn_children;
-        # Sleep a while
 
         foreach my $group (keys %{ $self->process_group }) {
             my $process_group = $self->process_group->{$group};
@@ -415,6 +414,7 @@ sub run_server {
             );
         }
 
+        # Sleep a while
         Time::HiRes::usleep(500_000);
     }
 
