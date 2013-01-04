@@ -197,7 +197,7 @@ use constant IS_WIN32 => $^O =~ /Win32/i;
 # Just some simple accessors
 __PACKAGE__->mk_accessors(qw/config log process_group json/);
 
-our $VERSION = "0.6";
+our $VERSION = "0.7";
 
 sub run {
     my ($class, %args) = @_;
