@@ -151,7 +151,7 @@ use base qw(Class::Accessor::Fast);
 
 __PACKAGE__->mk_accessors(qw/log socket select/);
 
-our $VERSION = "0.1";
+our $VERSION = "0.2";
 
 sub new {
     my $class = shift;
@@ -189,7 +189,13 @@ sub pull {
 
     foreach my $fh (@ready) {
         if ($fh == $self->socket) {
+            $self->socket->timeout(10);
             my $client = $self->socket->accept;
+
+            if ($! == &Errno::ETIMEDOUT) {
+                $self->log->warning("accept runs on a timeout");
+            }
+
             next unless $client;
             my $addr = $client->peerhost || "n/a";
 
