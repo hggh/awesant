@@ -485,6 +485,7 @@ sub run_log_shipper {
             # The type of the input. Note that the type can be
             # overwritten if the input format is a json event.
             my $itype = $input->{config}->{type};
+            my $ipath = $input->{config}->{path};
 
             # If there are errors detected and no type is set,
             # then shipping log data is blocked for inputs
@@ -560,7 +561,7 @@ sub run_log_shipper {
             }
 
             # Get events from the input.
-            $self->log->debug("pull lines from input type $itype");
+            $self->log->debug("pull lines from input type $itype path $ipath");
             my $lines = $input->{object}->pull(lines => $max_lines);
 
             # If no lines exists, just jump to the next input and
@@ -573,7 +574,7 @@ sub run_log_shipper {
             # If the input return events then the global interval
             # is set to now, so the sleep value should be 0.
             $time = Time::HiRes::gettimeofday();
-            $self->log->debug("pulled", scalar @$lines, "from input type $itype");
+            $self->log->debug("pulled", scalar @$lines, "lines from input type $itype path $path");
 
             # Process each event and store each event by the output type.
             my (%prepared_events, %lines_by_type);
@@ -608,6 +609,7 @@ sub run_log_shipper {
                         } else {
                             $count_lines += 1;
                             $count_bytes += length $lines_by_type{$otype}[$i];
+                            $self->log->debug("wrote event $i/$#{$events} to output $otype");
                         }
                     }
                 }
@@ -627,7 +629,7 @@ sub prepare_message {
     my ($self, $input, $line) = @_;
     my ($event, $type, $timestamp);
 
-    $self->log->debug("prepare message for input $input->{type}");
+    $self->log->debug("prepare message for input type $input->{type} path $input->{path}");
     $self->log->debug("event: $line");
 
     if ($input->{format} eq "json_event") {
