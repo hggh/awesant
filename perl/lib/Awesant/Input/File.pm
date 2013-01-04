@@ -263,19 +263,17 @@ sub pull {
     while (my $line = <$fhlog>) {
         chomp $line;
         push @$lines, $line;
-
-        if ($self->{fhpos}) {
-            $self->{lastpos} = tell($fhlog);
-            seek($fhpos, 0, 0);
-            printf $fhpos "%014d:%014d", $self->{inode}, $self->{lastpos};
-        }
-
         #$self->log->debug("read", length($line), "bytes from file");
         last unless --$max_lines;
     }
 
     # Store the last position
     $self->{lastpos} = tell($fhlog);
+
+    if ($self->{fhpos}) {
+        seek($fhpos, 0, 0);
+        printf $fhpos "%014d:%014d", $self->{inode}, $self->{lastpos};
+    }
 
     # If EOF is reached then the logfile should be
     # checked if the file was rotated.
