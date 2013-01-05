@@ -1,6 +1,6 @@
 Summary: Awesant is a log shipper for logstash.
 Name: awesant
-Version: 0.7
+Version: 0.6
 Release: 1%{?dist}
 License: distributable
 Group: System Environment/Daemons
@@ -85,7 +85,7 @@ rm -rf %{buildroot}
 %{_mandir}/man?/Awesant::*
 
 %changelog
-* Thu Dec 06 2012 Jonny Schulz <js@bloonix.net> - 0.5-1
+* Thu Dec 06 2012 Jonny Schulz <js@bloonix.net> - 0.6-1
 - Added a disconnect message to Output/Socket.pm.
 - Added some benchmarking options to Agent.pm.
 - Fixed "cat pidfile" in the init script.
