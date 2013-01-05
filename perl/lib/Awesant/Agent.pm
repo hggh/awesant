@@ -574,7 +574,7 @@ sub run_log_shipper {
             # If the input return events then the global interval
             # is set to now, so the sleep value should be 0.
             $time = Time::HiRes::gettimeofday();
-            $self->log->debug("pulled", scalar @$lines, "lines from input type $itype path $path");
+            $self->log->debug("pulled", scalar @$lines, "lines from input type $itype path $ipath");
 
             # Process each event and store each event by the output type.
             my (%prepared_events, %lines_by_type);
