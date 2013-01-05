@@ -1,3 +1,11 @@
+awesant (0.6) released at 2013-01-05
+
+    * Moved a comment some lines below
+    * Fixed typos.
+    * The last log file position is now written at the end of the pull request.
+    * Improved the logging.
+    * Added a timeout to accept() for IO::Socket.
+
 awesant (0.5) released at 2012-12-06
 
     * Added a disconnect message to Output/Socket.pm.
