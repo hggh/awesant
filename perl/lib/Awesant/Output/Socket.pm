@@ -302,8 +302,14 @@ sub push {
             $offset += $written;
         }
 
+        if ($self->log->is_debug) {
+            $self->log->debug("data written to server $self->{host}:$self->{port}");
+        }
+
         if (defined $self->{response}) {
+            $self->log->debug("read response from server $self->{host}:$self->{port}");
             $response = <$sock>;
+            $self->log->debug("got response from server $self->{host}:$self->{port}: $response");
         }
 
         alarm(0);

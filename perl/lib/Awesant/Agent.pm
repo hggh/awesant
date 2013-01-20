@@ -636,6 +636,7 @@ sub prepare_message {
         eval { $event = $self->json->decode($line) };
         if ($@) {
             $self->log->error("unable to decode json event for input $input->{type}:", $@);
+            $self->log->error($line);
             return ();
         }
         $event->{'@type'} ||= $input->{type};

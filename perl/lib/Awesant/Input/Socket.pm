@@ -196,6 +196,7 @@ sub pull {
                 $self->log->warning("accept runs on a timeout");
             }
 
+            $self->socket->timeout(0);
             next unless $client;
             my $addr = $client->peerhost || "n/a";
 
@@ -233,6 +234,7 @@ sub pull {
         my $request = <$fh>;
 
         if (!defined $request) {
+            $self->log->debug("remove closed socket of", $fh->peerhost | "n/a");
             $self->select->remove($fh);
             close $fh;
             next;
