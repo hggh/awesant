@@ -151,8 +151,6 @@ use base qw(Class::Accessor::Fast);
 
 __PACKAGE__->mk_accessors(qw/log socket select/);
 
-our $VERSION = "0.2";
-
 sub new {
     my $class = shift;
     my $opts  = $class->validate(@_);

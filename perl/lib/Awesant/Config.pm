@@ -110,8 +110,6 @@ package Awesant::Config;
 use strict;
 use warnings;
 
-our $VERSION = "0.1";
-
 sub parse {
     my ($class, $file) = @_;
 

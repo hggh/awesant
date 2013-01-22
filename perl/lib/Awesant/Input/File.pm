@@ -105,8 +105,6 @@ use Fcntl qw( :flock O_WRONLY O_CREAT O_RDONLY );
 use Params::Validate qw();
 use Log::Handler;
 
-our $VERSION = "0.3";
-
 sub new {
     my $class = shift;
     my $opts = $class->validate(@_);

@@ -154,8 +154,6 @@ use IO::Socket::INET;
 use Log::Handler;
 use Params::Validate qw();
 
-our $VERSION = "0.3";
-
 sub new {
     my $class = shift;
     my $opts = $class->validate(@_);
