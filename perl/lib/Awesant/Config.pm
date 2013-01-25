@@ -50,7 +50,7 @@ Add comments to the configuration to explain parameter:
 
 =head2 HASHES VS ARRRAYS
 
-Please not that if a hash key exists that the values will be pushed into an array:
+Please note that if a hash key exists that the values will be pushed into an array:
 
     param1 value
     param2 value1
@@ -154,16 +154,18 @@ sub _parse_config {
         # then the raw line will be stored as value.
         if ($is_multiline) {
             $value = $line;
+        }
 
         # If a line begins with "keyword {" then it's a sub-section.
-        } elsif ($line =~ /^([^\s]+)\s*\{/) {
+        elsif ($line =~ /^([^\s]+)\s*\{/) {
             ($key, $value) = ($1, { });
             $self->_add_key_value($config, $key, $value);
             $self->_parse_config($fh, $value);
             next;
+        }
 
         # A key value pair. The value can be an empty string.
-        } elsif ($line =~ /^([^\s]+)\s*(.*)/) {
+        elsif ($line =~ /^([^\s]+)\s*(.*)/) {
             ($key, $value) = ($1, $2);
         }
 
