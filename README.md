@@ -168,7 +168,5 @@ set to the type of the input, not of the output.
 
 # TODOS
 
-* Add any encryption support to ship log files
 * Does we really need another transports? Redis is so cool :-)
-* Some Debian foo to build a deb package
 * Add proto udp to Input/Socket.pm and Output/Socket.pm.
