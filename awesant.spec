@@ -85,6 +85,9 @@ rm -rf %{buildroot}
 %{_mandir}/man?/Awesant::*
 
 %changelog
+* Sun Feb 03 2013 Jonny Schulz <js@bloonix.net> - 0.7-1
+- Some readability improvements.
+- Added the debian specific directory with its control files to to build awesant for debian quickly.
 * Thu Dec 06 2012 Jonny Schulz <js@bloonix.net> - 0.6-1
 - Added a disconnect message to Output/Socket.pm.
 - Added some benchmarking options to Agent.pm.
