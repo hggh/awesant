@@ -1,0 +1,3 @@
+/etc/init.d/awesant-agent
+/etc/logrotate.d/awesant
+/etc/awesant/agent.conf
