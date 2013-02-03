@@ -1,6 +1,8 @@
-awesant (0.7) released at XXXX-XX-XX
+awesant (0.7) released at 2013-02-03
 
     * Some readability improvements.
+    * Added the debian specific directory with its control
+      files to to build awesant for debian quickly.
 
 awesant (0.6) released at 2013-01-05
 
