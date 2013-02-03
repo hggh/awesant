@@ -36,6 +36,12 @@ Or create a RPM with
     rpmbuild -ta awesant-$version.tar.gz
     rpm -i rpmbuild/RPMS/noarch/awesant...
 
+## Install awesant from a repository
+
+You can install awesant from the Bloonix repository if you like.
+The packages are available for Debian and CentOS like distributions.
+Just look into the INSTALL files on http://download.bloonix.de/.
+
 ## HowTo
 
 ### Start and stop Awesant
