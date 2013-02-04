@@ -1,3 +1,7 @@
+awesant (0.8) released at XXXX-XX-XX
+
+    * JSON output is now utf8.
+
 awesant (0.7) released at 2013-02-03
 
     * Some readability improvements.
