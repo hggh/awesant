@@ -1,6 +1,8 @@
 awesant (0.8) released at XXXX-XX-XX
 
     * JSON output is now utf8.
+    * Added a TZ hack for Perl 5.8.3 and POSIX 1.07.
+      UTC at the end of the time string is replaced with Z.
 
 awesant (0.7) released at 2013-02-03
 
