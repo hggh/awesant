@@ -647,6 +647,8 @@ sub prepare_message {
     } elsif ($input->{format} eq "plain") {
         $timestamp = POSIX::strftime("%Y-%m-%dT%H:%M:%S%z", localtime(time));
         $timestamp =~ s/(\d{2})(\d{2})\z/$1:$2/;
+        # Hack for Perl 5.8.3 with POSIX 1.07
+        $timestamp =~ s/UTC\z/Z/;
         $event = {
             '@timestamp'   => $timestamp,
             '@source'      => "file://" . $self->{hostname} . $input->{path},
