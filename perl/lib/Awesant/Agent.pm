@@ -209,7 +209,7 @@ sub run {
         reaped   => { },    # store the pids of each child that was reaped
         inputs   => [ ],    # store the inputs in a array ref
         outputs  => { },    # store the outputs in a hash ref by type
-        json     => JSON->new(),
+        json     => JSON->new->utf8(),
         hostname => Sys::Hostname::hostname(),
     }, $class;
 
