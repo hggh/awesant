@@ -647,9 +647,11 @@ sub prepare_message {
     } elsif ($input->{format} eq "plain") {
         $timestamp = POSIX::strftime("%Y-%m-%dT%H:%M:%S%z", localtime(time));
         $timestamp =~ s/(\d{2})(\d{2})\z/$1:$2/;
-        # fix cases where TZ offset is without sign
+        # Fix cases where TZ offset is without sign,
+        # as example "2013-02-04T18:05:1400:00"
         $timestamp =~ s/(\d{2})(\d{2}:)/$1+$2/;
-        # hack for HP-UX's strftime %z
+        # Hack for Perl 5.8.3 with POSIX 1.07, where strftime
+        # %Y-%m-%dT%H:%M:%S%z returns 2013-02-04T17:02:41UTC
         $timestamp =~ s/UTC\z/Z/;
         $event = {
             '@timestamp'   => $timestamp,
