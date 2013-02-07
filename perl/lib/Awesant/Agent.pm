@@ -751,7 +751,7 @@ sub log_watch {
 
     # Update the time for the next run
     $self->{next_watch_time} = time + $self->config->{log_watch_interval};
-    $self->log->info("watch for new log files");
+    $self->log->debug("watch for new log files");
 
     foreach my $to_watch (@$watch) {
         my $workers = $to_watch->{agent_config}->{workers};
