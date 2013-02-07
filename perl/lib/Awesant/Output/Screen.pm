@@ -74,7 +74,7 @@ use Params::Validate qw();
 
 sub new {
     my $class = shift;
-    my $opts = @_ > 1 ? {@_} : shift;
+    my $opts = $class->validate(@_);
     my $self = bless $opts, $class;
 
     if ($self->{send_to} eq "stderr") {
