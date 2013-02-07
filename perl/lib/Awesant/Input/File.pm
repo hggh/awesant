@@ -178,7 +178,7 @@ sub open_logfile {
     $self->log->info("open '$file' for reading");
 
     open $fhlog, "<", $file or do {
-        $self->log->error("unable to open logfile '$file' for reading - $!");
+        $self->log->info("unable to open logfile '$file' for reading - $!");
         return undef;
     };
 
@@ -256,7 +256,7 @@ sub pull {
     my $lines = [ ];
     my $fhpos = $self->{fhpos};
     my $fhlog = $self->open_logfile
-        or return $lines;
+        or return undef;
 
     while (my $line = <$fhlog>) {
         chomp $line;
