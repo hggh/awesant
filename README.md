@@ -137,6 +137,7 @@ With this agent configuration your logstash should be configured as follows:
 
 * It is possible to set a comma separated list of types for outputs.
 * It is possible to set wildcards for file inputs.
+* If a wildcard is used then awesant is watching the path for new files. If a new file is created then awesant tails the new file automatically, so you do not need to restart awesant.
 
 As example if you has different inputs, such as
 
