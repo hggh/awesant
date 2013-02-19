@@ -5,7 +5,16 @@ awesant (0.8) released at XXXX-XX-XX
       UTC at the end of the time string is replaced with Z.
     * Awesant is now continuously watching for new log files on all paths
       that contains a wildcard. If a new log file is created then the log
-      file is added to the input automatically
+      file is added to the input automatically.
+    * Improved the forking machine for the file input. In the past for each
+      single file a process was forked if the parameter "workers" was set.
+      Now only one process is forked to process all files from a single
+      input configuration. The forked process is also watching for new
+      log files. For file inputs max 1 worker is possible.
+    * Added the new parameter "start_position" to Input/File.pm. With this
+      parameter it's possible to set where to start to tail the logfile.
+      Possible values are "begin" and "end". The file watcher of awesant
+      sets this parameter to "begin" if a new file were found.
 
 awesant (0.7) released at 2013-02-03
 

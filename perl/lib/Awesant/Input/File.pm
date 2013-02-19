@@ -125,7 +125,11 @@ sub get_lastpos {
     my $libdir = $self->{libdir};
     my $inode = "";
 
-    $self->{lastpos} = -e $file ? (stat($file))[7] : 0;
+    if ($self->{start_position} eq "begin") {
+        $self->{lastpos} = 0;
+    } else {
+        $self->{lastpos} = -e $file ? (stat($file))[7] : 0;
+    }
 
     if (!$self->{save_position}) {
         return;
@@ -290,6 +294,11 @@ sub validate {
         libdir => {
             type => Params::Validate::SCALAR,
             default => "/var/lib/awesant",
+        },
+        start_position => {
+            type => Params::Validate::SCALAR,
+            default => "end",
+            regex => qr/^(begin|end)\z/,
         },
         save_position => {
             type => Params::Validate::SCALAR,

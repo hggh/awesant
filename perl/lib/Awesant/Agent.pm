@@ -203,8 +203,7 @@ use constant IS_WIN32 => $^O =~ /Win32/i;
 use constant PARENT_PID => $$;
 
 # Just some simple accessors
-__PACKAGE__->mk_accessors(qw/config log process_group json inputs outputs/);
-__PACKAGE__->mk_accessors(qw/watch_workers watch_inputs/);
+__PACKAGE__->mk_accessors(qw/config log json watch filed inputs outputs/);
 
 our $VERSION = "0.8";
 
@@ -216,15 +215,12 @@ sub run {
         done     => 0,      # a flag to stop the daemon on some signals
         child    => { },    # store the pids of each child
         reaped   => { },    # store the pids of each child that was reaped
-        inputs   => [ ],    # store the inputs in a array ref
+        inputs   => [ ],    # store the inputs as process groups
         outputs  => { },    # store the outputs in a hash ref by type
-        watch    => [ ],    # store paths to watch for new files
-        filed    => { },    # store seen file names to skip watching
+        watch    => 0,      # store the files to watch for each process group
+        filed    => 0,      # store the files already watched for each process group
         json     => JSON->new->utf8(),
         hostname => Sys::Hostname::hostname(),
-        process_group => [ { } ],
-        watch_workers => 0,
-        watch_inputs  => 0,
     }, $class;
 
     # The main workflow.
@@ -279,23 +275,25 @@ sub load_output {
 
 sub load_input {
     my $self = shift;
-    my $inputs = $self->config->{input};
+    my $input_config = $self->config->{input};
+    my $no_worker_inputs;
 
     $self->log->info("load input plugins");
 
-    foreach my $input (keys %$inputs) {
+    foreach my $input_type (keys %$input_config) {
         # At first load the input modules.
         # Example: file => Awesant/Input/File.pm
-        my $module = $self->load_module(input => $input);
+        my $module = $self->load_module(input => $input_type);
 
-        foreach my $config (@{$inputs->{$input}}) {
+        foreach my $plugin_config (@{$input_config->{$input_type}}) {
+            my $input_group;
 
             # Split the agent configuration parameter from the
             # parameter for the input module.
             my %agent_config;
             foreach my $param (qw/type tags add_field workers format/) {
-                if (exists $config->{$param}) {
-                    $agent_config{$param} = delete $config->{$param};
+                if (exists $plugin_config->{$param}) {
+                    $agent_config{$param} = delete $plugin_config->{$param};
                 }
             }
 
@@ -309,60 +307,66 @@ sub load_input {
             }
 
             # A path should be set.
-            $agent_config{path} = $config->{path} || "/";
+            $agent_config{path} = $plugin_config->{path} || "/";
+
+            if ($agent_config{workers}) {
+                $input_group = { watch => [ ], filed => { }, inputs => [ ], workers => $agent_config{workers} };
+                push @{$self->inputs}, $input_group;
+            } else {
+                $no_worker_inputs ||= { watch => [ ], filed => { }, inputs => [ ], workers => 1 };
+                $input_group = $no_worker_inputs;
+            }
 
             # The file input can only process a single file, but if a wildcard
             # is used within the path or a comma separated list of files is passed
             # it's necessary to create an input object for each file.
-            if ($input eq "file") {
-                if ($agent_config{workers} && $agent_config{workers} > 1) {
-                    # It makes no sense that more then 1 worker tails a log file.
-                    $self->log->info("set workers for input $input to 1");
-                    $agent_config{workers} = 1;
+            if ($input_type eq "file") {
+                if ($input_group->{workers} && $input_group->{workers} > 1) {
+                    $self->log->info("set workers for input $input_type to 1");
+                    $input_group->{workers} = 1;
                 }
 
-                foreach my $path (split /,/, $config->{path}) {
+                foreach my $path (split /,/, $plugin_config->{path}) {
                     $path =~ s/^\s+//;
                     $path =~ s/\s+\z//;
 
                     # Store the path to watch for new files if the path
                     # contains a wildcard. If a new file is found then
                     # a new input object will be created.
-                    if ($path =~ /\*/) {
-                        push @{ $self->{watch} }, {
-                            module        => $module,
-                            watch_path    => $path,
-                            plugin_config => { %$config },
-                            agent_config  => { %agent_config },
-                        };
-                    }
+                    push @{$input_group->{watch}}, {
+                        module        => $module,
+                        watch_path    => $path,
+                        plugin_config => { %$plugin_config },
+                        agent_config  => { %agent_config },
+                    };
 
                     while (my $file = glob $path) {
-                        my %c = %$config;
+                        # Clone the configuration for each file input.
+                        my %p = %$plugin_config;
                         my %a = %agent_config;
-                        $a{path} = $c{path} = $file;
-
-                        push @{$self->inputs}, {
-                            time   => scalar Time::HiRes::gettimeofday(),
-                            object => $module->new(\%c),
-                            config => $self->validate_agent_config(\%a),
-                            filed  => $file,
-                            remove_on_errors => $path =~ /\*/ ? 1 : 0,
-                        };
+                        $p{path} = $a{path} = $file;
 
                         # Store the file name to skip the file from watching.
-                        $self->{filed}->{$file} = time;
+                        $input_group->{filed}->{$file} = time;
+
+                        my $validated = $self->validate_agent_config(\%a);
+                        $validated->{time} = scalar Time::HiRes::gettimeofday();
+                        $validated->{object} = $module->new(\%p);
+                        $validated->{remove_on_errors} = 1;
+                        push @{$input_group->{inputs}}, $validated;
                     }
                 }
             } else {
-                push @{$self->inputs}, {
-                    time   => scalar Time::HiRes::gettimeofday(),
-                    object => $module->new($config),
-                    config => $self->validate_agent_config(\%agent_config),
-                    remove_on_errors => 0,
-                };
+                my $validated = $self->validate_agent_config(\%agent_config);
+                $validated->{time} = scalar Time::HiRes::gettimeofday();
+                $validated->{object} = $module->new($plugin_config);
+                push @{$input_group->{inputs}}, $validated;
             }
         }
+    }
+
+    if (%{$no_worker_inputs}) {
+        push @{$self->inputs}, $no_worker_inputs;
     }
 }
 
@@ -414,10 +418,8 @@ sub daemonize {
     $self->{next_watch_time} = time + $self->config->{log_watch_interval};
 
     if (IS_WIN32) {
-        $self->watch_inputs(1);
         $self->run_agent;
     } else {
-        $self->watch_workers(1);
         $self->run_server;
     }
 }
@@ -427,23 +429,6 @@ sub run_server {
     my $child = $self->{child};
     my $reaped = $self->{reaped};
 
-    # Split the inputs into process groups.
-    while (@{$self->inputs}) {
-        my $input = shift @{$self->inputs};
-
-        if ($input->{config}->{workers}) {
-            push @{$self->{process_group}}, {
-                workers => $input->{config}->{workers},
-                inputs  => [ $input ],
-                child   => { },
-            };
-        } else {
-            $self->{process_group}->[0]->{workers} ||= 1;
-            $self->{process_group}->[0]->{child} ||= { };
-            push @{$self->{process_group}->[0]->{inputs}}, $input;
-        }
-    }
-
     # Handle died children.
     $SIG{CHLD} = sub { $self->sig_child_handler(@_) };
 
@@ -452,15 +437,13 @@ sub run_server {
         $self->reap_children;
         # Spawn new children.
         $self->spawn_children;
-        # Watch for new files
-        $self->log_watch;
 
-        foreach my $group (0..$#{ $self->process_group }) {
-            my $process_group = $self->process_group->[$group];
+        foreach my $group (0..$#{ $self->inputs }) {
+            my $input_group = $self->inputs->[$group];
             $self->log->debug(
-                scalar keys %{$process_group->{child}},
+                scalar keys %{$input_group->{child}},
                 "processes running for process group $group:",
-                keys %{$process_group->{child}},
+                keys %{$input_group->{child}},
             );
         }
 
@@ -476,6 +459,10 @@ sub run_agent {
 
     while ($self->{done} == 0) {
         eval { $self->run_log_shipper };
+
+        if ($self->{done} == 0) {
+            sleep 1;
+        }
     }
 }
 
@@ -493,18 +480,20 @@ sub run_log_shipper {
 
     while ($self->{done} == 0) {
         # Watch for new log files.
-        if ($self->watch_inputs) {
+        if ($self->watch) {
             $self->log_watch;
         }
 
         # Destroy file inputs that returns an error.
-        while (@destroy_inputs) {
-            my $num = shift @destroy_inputs;
-            my $destroy = splice(@{$inputs}, $num, 1);
-            my $filed = $destroy->{filed};
-            delete $self->{filed}->{$filed};
+        foreach my $num (reverse sort @destroy_inputs) {
+            my $destroy = splice(@$inputs, $num, 1);
+            my $filed = $destroy->{path};
+            delete $self->filed->{$filed};
             $self->log->info("destroyed file '$filed'");
         }
+
+        # Cleanup the array
+        @destroy_inputs = ();
 
         # If no lines was received, then the agent should
         # sleep for a while - low cost cpu :-)
@@ -542,9 +531,8 @@ sub run_log_shipper {
 
             # The type of the input. Note that the type can be
             # overwritten if the input format is a json event.
-            my $iconf = $input->{config};
-            my $itype = $iconf->{type};
-            my $ipath = $iconf->{path};
+            my $itype = $input->{type};
+            my $ipath = $input->{path};
 
             # If there are errors detected and no type is set,
             # then shipping log data is blocked for inputs
@@ -568,7 +556,7 @@ sub run_log_shipper {
                     # Process each line until the array is empty.
                     $self->log->info("try to process", scalar @{$ref->{lines}}, "events for output type $otype");
                     while (my $line = shift @{$ref->{lines}}) {
-                        my ($otype, $event) = $self->prepare_message($input->{config}, $line)
+                        my ($otype, $event) = $self->prepare_message($input, $line)
                             or next;
 
                         # If the output is not available then the last line
@@ -624,9 +612,7 @@ sub run_log_shipper {
             my $lines = $input->{object}->pull(lines => $max_lines);
 
             if (!defined $lines && $input->{remove_on_errors}) {
-                if ($iconf->{workers}) {
-                    exit 0;
-                }
+                $self->log->info("input type $itype path $ipath returns undef, object will be destroyed");
                 push @destroy_inputs, $input_num;
             }
 
@@ -645,7 +631,7 @@ sub run_log_shipper {
             # Process each event and store each event by the output type.
             my (%prepared_events, %lines_by_type);
             while (my $line = shift @$lines) {
-                my ($otype, $event) = $self->prepare_message($input->{config}, $line)
+                my ($otype, $event) = $self->prepare_message($input, $line)
                     or next;
                 push @{$prepared_events{$otype}}, $event;
                 push @{$lines_by_type{$otype}}, $line;
@@ -742,8 +728,9 @@ sub prepare_message {
 
 sub log_watch {
     my $self = shift;
-    my $watch = $self->{watch};
-    my $filed = $self->{filed};
+    my $watch = $self->watch;
+    my $filed = $self->filed;
+    my $inputs = $self->inputs;
 
     if ($self->{next_watch_time} > time) {
         return;
@@ -754,39 +741,22 @@ sub log_watch {
     $self->log->debug("watch for new log files");
 
     foreach my $to_watch (@$watch) {
-        my $workers = $to_watch->{agent_config}->{workers};
+        my $path = $to_watch->{watch_path};
+        my $module = $to_watch->{module};
+        my $plugin_config = $to_watch->{plugin_config};
+        my $agent_config = $self->validate_agent_config($to_watch->{agent_config});
 
-        if (($workers && $self->watch_workers) || (!$workers && $self->watch_inputs)) {
-            my $path = $to_watch->{watch_path};
-            my $module = $to_watch->{module};
-
-            while (my $file = glob $path) {
-                if (!exists $filed->{$file}) {
-                    my %c = %{$to_watch->{plugin_config}};
-                    my %a = %{$to_watch->{agent_config}};
-                    $a{path} = $c{path} = $file;
-
-                    my $input = {
-                        time   => scalar Time::HiRes::gettimeofday(),
-                        object => $module->new(\%c),
-                        config => $self->validate_agent_config(\%a),
-                        filed  => $file,
-                        remove_on_errors => "yes",
-                    };
-
-                    if ($a{workers}) {
-                        push @{$self->{process_group}}, {
-                            workers => $a{workers},
-                            inputs  => [ $input ],
-                            child   => { },
-                        };
-                    } else {
-                        push @{$self->inputs}, $input;
-                    }
-
-                    # Store the file name to skip the file from watching.
-                    $self->{filed}->{$file} = time;
-                }
+        while (my $file = glob $path) {
+            if (!exists $filed->{$file}) {
+                my %p = %$plugin_config;
+                my %a = %$agent_config;
+                $p{path} = $a{path} = $file;
+                $p{start_position} = "begin";
+                $a{remove_on_errors} = 1;
+                $a{time} = scalar Time::HiRes::gettimeofday();
+                $a{object} = $module->new(\%p);
+                push @$inputs, \%a;
+                $filed->{$file} = time;
             }
         }
     }
@@ -833,10 +803,10 @@ sub create_logger {
 sub spawn_children {
     my $self = shift;
 
-    foreach my $group (0..$#{ $self->process_group }) {
-        my $process_group = $self->process_group->[$group];
-        my $current_worker = scalar keys %{$process_group->{child}};
-        my $wanted_worker = $process_group->{workers};
+    foreach my $group (0..$#{ $self->inputs }) {
+        my $input_group = $self->inputs->[$group];
+        my $current_worker = scalar keys %{$input_group->{child}};
+        my $wanted_worker = $input_group->{workers};
 
         if ($current_worker < $wanted_worker) {
             for (1..$wanted_worker - $current_worker) {
@@ -845,21 +815,21 @@ sub spawn_children {
 
                 if ($pid) {
                     # If $pid is set, then it's the parent.
-                    $self->{child}->{$pid} = $process_group;
+                    $self->{child}->{$pid} = $input_group;
                     # The pid is stored to the process group just to
                     # count how many processes are running for the group.
-                    $process_group->{child}->{$pid} = $pid;
+                    $input_group->{child}->{$pid} = $pid;
                     # Hoa yeah! A new perl machine was born! .-)
-                    $self->log->info("forked child $pid for process group");
+                    $self->log->info("forked child $pid for input group $group");
                 } elsif (!defined $pid) {
                     # If the $pid is undefined then fork failed.
                     die "unable to fork - $!";
                 } else {
                     # If the pid is defined then it's the child.
                     eval {
-                        $self->watch_workers(0);
-                        $self->watch_inputs($group ? 0 : 1);
-                        $self->inputs($process_group->{inputs});
+                        $self->filed($input_group->{filed});
+                        $self->watch($input_group->{watch});
+                        $self->inputs($input_group->{inputs});
                         $self->run_agent;
                     };
                     exit($? ? 9 : 0);
@@ -876,24 +846,8 @@ sub reap_children {
     my @reaped = keys %$reaped;
 
     foreach my $pid (@reaped) {
-        my $process_group = delete $child->{$pid};
-
-        if (@{$process_group->{inputs}} == 1 && $process_group->{inputs}->[0]->{remove_on_errors}) {
-            # process_group is a array and we don't know the position of the
-            # inputs in the array. For this reason destroy=1 is set.
-            $process_group->{destroy} = 1;
-
-            # Find the group with destroy=1 and delete it from the array.
-            foreach my $i (0..$#{ $self->process_group }) {
-                if ($self->process_group->[$i]->{destroy}) {
-                    splice(@{ $self->process_group }, $i, 1);
-                    last;
-                }
-            }
-        } else {
-            delete $process_group->{child}->{$pid};
-        }
-
+        my $input_group = delete $child->{$pid};
+        delete $input_group->{child}->{$pid};
         delete $reaped->{$pid};
     }
 }

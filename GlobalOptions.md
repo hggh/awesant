@@ -43,6 +43,43 @@ Default: plain
 
 How many processes to fork for this input.
 
+Note that only 1 worker is possible for file inputs.
+
+Example:
+
+    file {
+        type apache-access-log
+        path /var/log/httpd/foo-access.log, /var/log/httpd/bar-access.log
+        workers 1
+    }
+    file {
+        type apache-error-log
+        path /var/log/httpd/foo-error.log, /var/log/httpd/bar-error.log
+        workers 1
+    }
+    file {
+        type myapp
+        path /var/log/myapp/*.log
+        workers 1
+    }
+    socket {
+        type logstash
+        host 127.0.0.1
+        port 4711
+        format json_event
+        workers 20
+    }
+
+
+In this case
+
+* 1 process is forked to process foo-access.log and bar-access.log.
+* 1 process is forked to process foo-error.log and bar-error.log.
+* 1 process is forked to process all *.log files in /var/log/myapp and watching for new files.
+* 20 processes are forked to process incoming request on host 127.0.0.1 port 4711
+
+By default 1 process will be forked to process all inputs that has no "workers" configured.
+
 ### tags
 
 Add any number of arbitrary tags to your event.
