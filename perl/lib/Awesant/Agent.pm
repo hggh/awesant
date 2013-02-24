@@ -309,7 +309,10 @@ sub load_input {
             $agent_config{path} = $plugin_config->{path} || "/";
 
             if ($agent_config{workers}) {
-                $input_group = { watch => [ ], filed => { }, inputs => [ ], workers => $agent_config{workers} };
+                $input_group = {
+                    watch => [ ], filed => { }, inputs => [ ],
+                    workers => $agent_config{workers},
+                };
                 push @{$self->inputs}, $input_group;
             } else {
                 $no_worker_inputs ||= { watch => [ ], filed => { }, inputs => [ ], workers => 1 };
@@ -318,7 +321,7 @@ sub load_input {
 
             # The file input can only process a single file, but if a wildcard
             # is used within the path or a comma separated list of files is passed
-            # it's necessary to create an input object for each file.
+            # then it's necessary to create an input object for each file.
             if ($input_type eq "file") {
                 if ($input_group->{workers} && $input_group->{workers} > 1) {
                     $self->log->info("set workers for input $input_type to 1");
@@ -553,7 +556,11 @@ sub run_log_shipper {
                     my $bytes  = 0;
 
                     # Process each line until the array is empty.
-                    $self->log->info("try to process", scalar @{$ref->{lines}}, "events for output type $otype");
+                    $self->log->info(
+                        "try to process",
+                        scalar @{$ref->{lines}},
+                        "events for output type $otype",
+                    );
                     while (my $line = shift @{$ref->{lines}}) {
                         my ($otype, $event) = $self->prepare_message($input, $line)
                             or next;
@@ -639,7 +646,10 @@ sub run_log_shipper {
             foreach my $otype (keys %prepared_events) {
                 my $events = $prepared_events{$otype};
                 if (!exists $outputs->{$otype}) {
-                    $self->log->warning("received events from input type $itype with an non existent output type $otype");
+                    $self->log->warning(
+                        "received events from input type $itype",
+                        "with an non existent output type $otype"
+                    );
                 }
                 foreach my $output (@{$outputs->{$otype}}) {
                     for (my $i=0; $i <= $#{$events}; $i++) {
@@ -784,8 +794,8 @@ sub remove_pidfile {
 
     if (-f $self->{args}->{pidfile}) {
         unlink($self->{args}->{pidfile});
-            # "or die" is not necessaray because
-            # awesant stop running
+        # "or die" is not necessaray because
+        # awesant stop running
     }
 }
 
