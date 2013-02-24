@@ -288,8 +288,7 @@ sub load_input {
         foreach my $plugin_config (@{$input_config->{$input_type}}) {
             my $input_group;
 
-            # Split the agent configuration parameter from the
-            # parameter for the input module.
+            # Shift the agent configuration parameter.
             my %agent_config;
             foreach my $param (qw/type tags add_field workers format/) {
                 if (exists $plugin_config->{$param}) {
