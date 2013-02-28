@@ -15,6 +15,7 @@ awesant (0.8) released at XXXX-XX-XX
       parameter it's possible to set where to start to tail the logfile.
       Possible values are "begin" and "end". The file watcher of awesant
       sets this parameter to "begin" if a new file were found.
+    * Added awesant-create-cert to create a cert bundle.
 
 awesant (0.7) released at 2013-02-03
 
