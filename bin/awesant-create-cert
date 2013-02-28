@@ -1,0 +1,89 @@
+#!/bin/sh
+
+# NAME
+# 
+# awesant-create-cert - Cert creator.
+# 
+# COPYRIGHT
+# 
+# Copyright (C) 2013 by Jonny Schulz. All rights reserved.
+# 
+# POWERED BY
+# 
+#      _    __ _____ _____ __  __ __ __   __
+#     | |__|  |     |     |  \|  |__|\  \/  /
+#     |  . |  |  |  |  |  |      |  | >    <
+#     |____|__|_____|_____|__|\__|__|/__/\__\
+
+set -e
+
+CONFIG=$1
+BITS=$2
+DAYS=$3
+
+__usage() {
+    ret=$1
+    echo ""
+    echo "Usage: $0 <path> <bits> <days>"
+    echo ""
+    echo "This script creates a certificate bundle for the awesant"
+    echo "input/output socket module. You have to pass the path"
+    echo "to the configuration directory of awesant, which is:"
+    echo "/etc/awesant by default."
+    echo ""
+    echo "Option 'bits' is set to 4096 by default."
+    echo "Option 'days' is set to 10000 days by default."
+    echo ""
+    echo "Example:"
+    echo ""
+    echo "    $0 /etc/awesant 4096 10000"
+    echo ""
+    exit $ret
+}
+
+if test -z "$CONFIG" ; then
+    echo "Please pass the path to the awesant configuration as first argument"
+    exit 1
+fi
+
+if test ! -d "$CONFIG" ; then
+    echo "Configuration path '$CONFIG' does not exists"
+    exit 1
+fi
+
+if test -z "$BITS" ; then
+    BITS=4096
+fi
+
+if test -z "$DAYS" ; then
+    DAYS=10000
+fi
+
+echo "cd $CONFIG"
+cd $CONFIG
+
+if test ! -e "certs" ; then
+    echo "mkdir certs"
+    mkdir certs
+fi
+
+echo "cd certs"
+cd certs
+
+CAKEYFILE="ca.key"
+CACRTFILE="ca.crt"
+CSRFILE="req.csr"
+CRTFILE="ssl.crt"
+KEYFILE="ssl.key"
+SERIAL="01"
+
+echo "create ssl bundle"
+
+openssl genrsa $BITS > $CAKEYFILE
+openssl req -new -x509 -nodes -days $DAYS \
+        -key $CAKEYFILE -batch > $CACRTFILE
+openssl req -newkey rsa:$BITS -days $DAYS \
+        -nodes -keyout $KEYFILE -batch > $CSRFILE
+openssl x509 -req -in $CSRFILE -days $DAYS \
+        -CA $CACRTFILE -CAkey $CAKEYFILE -set_serial $SERIAL > $CRTFILE
+
