@@ -51,6 +51,7 @@ install:
 	fi;
 
 	./install-sh -c -m 0755 bin/awesant $(PREFIX)/bin/awesant
+	./install-sh -c -m 0755 bin/awesant-create-cert $(PREFIX)/bin/awesant-create-cert
 
 	# install the startup script
 	if test ! -e "$(INITDIR)" ; then \
