@@ -255,7 +255,6 @@ sub load_output {
                 die "missing mandatory parameter 'type' of output '$output'";
             }
 
-            # Only a-zA-Z_0-9 is allowed.
             if (!length $types) {
                 die "no value passed for parameter 'type' of output '$output'";
             }
