@@ -163,7 +163,7 @@ sub get_lastpos {
 
     # autoflush
     my $oldfh = select $fhpos;
-    $| = $self->{autoflush};
+    $| = 1;
     select $oldfh;
 
     # save the file handle for later usage
