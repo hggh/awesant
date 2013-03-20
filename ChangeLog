@@ -16,6 +16,8 @@ awesant (0.8) released at XXXX-XX-XX
       Possible values are "begin" and "end". The file watcher of awesant
       sets this parameter to "begin" if a new file were found.
     * Added awesant-create-cert to create a cert bundle.
+    * Fixed a bug with autoflush in File.pm for files to store the last
+      byte position of logfiles.
 
 awesant (0.7) released at 2013-02-03
 
