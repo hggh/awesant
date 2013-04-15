@@ -1,6 +1,6 @@
 Summary: Awesant is a log shipper for logstash.
 Name: awesant
-Version: 0.7
+Version: 0.8
 Release: 1%{?dist}
 License: distributable
 Group: System Environment/Daemons
@@ -68,6 +68,7 @@ rm -rf %{buildroot}
 
 %{initdir}/awesant-agent
 %{_bindir}/awesant
+%{_bindir}/awesant-create-cert
 
 %dir %attr(0750, root, root) %{libdir}
 %dir %attr(0750, root, root) %{logdir}
@@ -85,6 +86,8 @@ rm -rf %{buildroot}
 %{_mandir}/man?/Awesant::*
 
 %changelog
+* Sun Apr 15 2013 Jonny Schulz <js@bloonix.de> - 0.8-1
+- A lot of bug fixes and features implemented.
 * Sun Feb 03 2013 Jonny Schulz <js@bloonix.net> - 0.7-1
 - Some readability improvements.
 - Added the debian specific directory with its control files to to build awesant for debian quickly.
