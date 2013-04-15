@@ -38,6 +38,12 @@ Or create a RPM with
     rpmbuild -ta awesant-$version.tar.gz
     rpm -i rpmbuild/RPMS/noarch/awesant...
 
+Or create a deb-package with
+
+    git clone https://github.com/bloonix/awesant.git awesant-$version
+    cd awesant-$version
+    dpkg-buildpackage
+
 ## Install Awesant from a repository
 
 You can install Awesant from the Bloonix repository if you like.
