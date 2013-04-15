@@ -18,6 +18,7 @@ awesant (0.8) released at XXXX-XX-XX
     * Added awesant-create-cert to create a cert bundle.
     * Fixed a bug with autoflush in File.pm for files to store the last
       byte position of logfiles.
+    * Fixed add_field exception if a comma separated list is set.
 
 awesant (0.7) released at 2013-02-03
 

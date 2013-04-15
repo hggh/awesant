@@ -298,9 +298,11 @@ sub load_input {
             # If the add_field value is a hash then it can contains code
             # instead of a simple string. In this case the code must be
             # executed for every json event.
-            foreach my $field (keys %{$agent_config{add_field}}) {
-                if (ref $agent_config{add_field}{$field} eq "HASH") {
-                    $agent_config{__add_field}{$field} = delete $agent_config{add_field}{$field};
+            if (ref $agent_config{add_field} eq "HASH") {
+                foreach my $field (keys %{$agent_config{add_field}}) {
+                    if (ref $agent_config{add_field}{$field} eq "HASH") {
+                        $agent_config{__add_field}{$field} = delete $agent_config{add_field}{$field};
+                    }
                 }
             }
 
