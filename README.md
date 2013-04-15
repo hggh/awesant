@@ -33,6 +33,8 @@ Just download the project and execute
 
 Or create a RPM with
 
+    git clone https://github.com/bloonix/awesant.git awesant-$version
+    tar -czf awesant-$version.tar.gz awesant-$version
     rpmbuild -ta awesant-$version.tar.gz
     rpm -i rpmbuild/RPMS/noarch/awesant...
 
