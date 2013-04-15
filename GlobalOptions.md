@@ -111,12 +111,12 @@ In this case you do not want to create a input configuration for each single log
         file {
             type apache-error-log
             path /var/log/apache2/mydomain1.example/foo/error.log
-            add_field domain foo.mydomain1.example
+            add_field domain, foo.mydomain1.example
         }
         file {
             type apache-error-log
             path /var/log/apache2/mydomain1.example/bar/error.log
-            add_field domain bar.mydomain1.example
+            add_field domain, bar.mydomain1.example
         }
         ... and so on - that would be bloated
 
