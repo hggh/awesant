@@ -1,4 +1,4 @@
-awesant (0.8) released at XXXX-XX-XX
+awesant (0.8) released at 2013-04-15
 
     * JSON output is now utf8.
     * Added a TZ hack for Perl 5.8.3 and POSIX 1.07.
