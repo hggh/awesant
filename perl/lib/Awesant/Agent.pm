@@ -205,7 +205,7 @@ use constant PARENT_PID => $$;
 # Just some simple accessors
 __PACKAGE__->mk_accessors(qw/config log json watch filed inputs outputs/);
 
-our $VERSION = "0.8";
+our $VERSION = "0.9";
 
 sub run {
     my ($class, %args) = @_;
@@ -704,7 +704,7 @@ sub prepare_message {
         $event->{'@type'} ||= $input->{type};
         push @{$event->{'@tags'}}, @{$input->{tags}};
         foreach my $field (keys %{$input->{add_field}}) {
-            $event->{$field} = $input->{add_field}->{$field};
+            $event->{'@fields'}->{$field} = $input->{add_field}->{$field};
         }
     } elsif ($input->{format} eq "plain") {
         $timestamp = POSIX::strftime("%Y-%m-%dT%H:%M:%S%z", localtime(time));

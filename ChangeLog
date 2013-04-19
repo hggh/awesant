@@ -1,3 +1,7 @@
+awesant (0.9) released at 2013-04-19
+
+    * Fixed: add_field does not work if format is set to json_event.
+
 awesant (0.8) released at 2013-04-15
 
     * JSON output is now utf8.
