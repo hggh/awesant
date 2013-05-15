@@ -8,6 +8,9 @@ my $build = Module::Build->new(
     module_name        => "Awesant::Agent",
     dist_author        => "Jonny Schulz",
     sign               => 0,
+    #recommends => {
+    #    "Net::RabbitMQ" => 0,
+    #},
     requires => {
         perl => "5.006_001",
         "Fcntl"            => 0,

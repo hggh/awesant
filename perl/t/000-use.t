@@ -8,4 +8,10 @@ use Awesant::Output::Socket;
 use Awesant::Output::Screen;
 use Awesant::Output::Redis;
 
+eval "Net::RabbitMQ";
+
+if (!$@) {
+    require Awesant::Output::Rabbitmq;
+}
+
 ok(1, "use");
