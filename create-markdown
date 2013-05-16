@@ -18,6 +18,7 @@ foreach my $mod (@modules) {
     my $content = do { local $/; <$in> };
     close $in;
     $content =~ s/.+=head1\sOPTIONS\s*\n(.+)=head1\sMETHODS.+/$1/s;
+    $content =~ s/=head1/##/g;
     $content =~ s/=head2/###/g;
     my $readme = "${mod}Options.md";
     $readme =~ s/:://g;

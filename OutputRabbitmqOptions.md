@@ -63,7 +63,7 @@ http://www.rabbitmq.com/ for more information.
 
 Default: defaults from http://search.cpan.org/~jesus/Net--RabbitMQ/RabbitMQ.pm
 
-=head1 CONFIGURATION
+## CONFIGURATION
 
 ### RabbitMQ
 
