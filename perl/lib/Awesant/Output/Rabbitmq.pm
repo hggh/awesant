@@ -50,6 +50,18 @@ The queue to transport the data.
 
 Default: logstash
 
+=head2 queue_durable, queue_exclusive, queue_auto_delete
+
+Value is boolean: true, 1, false, 0
+
+All defaults to false.
+
+=head2 exchange_durable, exchange_auto_delete
+
+Value is boolean: true, 1, false, 0
+
+All defaults to false.
+
 =head2 channel
 
 channel is a positive integer describing the channel you which to open.
@@ -62,18 +74,70 @@ See http://www.rabbitmq.com/uri-spec.html for more information.
 
 Default: /
 
-=head2 exchange, exchange_type
-
-The name of the exchange to bind and the type.
-
-Default: logstash/direct
-
 =head2 heartbeat, frame_max, channel_max
 
 See http://search.cpan.org/~jesus/Net--RabbitMQ/RabbitMQ.pm and
 http://www.rabbitmq.com/ for more information.
 
 Default: defaults from http://search.cpan.org/~jesus/Net--RabbitMQ/RabbitMQ.pm
+
+=head1 CONFIGURATION
+
+=head2 RabbitMQ
+
+    rabbitmqctl add_user awesant secret
+    rabbitmqctl set_permissions "awesant" ".*" ".*" ".*"
+
+=head2 Awesant
+
+    input {
+        file {
+            type test
+            path /var/log/test/test.log
+        }
+    }
+
+    output {
+        rabbitmq {
+            type test
+            host 127.0.0.1
+            user awesant
+            password secret
+            channel 1
+            queue logstash
+            queue_exclusive false
+            queue_durable false
+            queue_auto_delete false
+            exchange logstash
+            exchange_type direct
+            exchange_durable false
+            exchange_auto_delete false
+        }
+    }
+
+=head2 Logstash
+
+    input {
+        rabbitmq {
+            type => "test"
+            user => "awesant"
+            password => "secret"
+            host => "127.0.0.1"
+            queue => "logstash"
+            exchange => "logstash"
+            exclusive => false
+            durable => false
+            auto_delete => false
+            format => "json_event"
+        }
+    }
+
+    output {
+        file {
+            type => "test"
+            path => "/var/log/logstash/test.log"
+        }
+    }
 
 =head1 METHODS
 
@@ -117,7 +181,7 @@ Jonny Schulz <support(at)bloonix.de>.
 
 =head1 COPYRIGHT
 
-Copyright (C) 2013 by Jonny Schulz. All rights reserved.
+Copyright (C) 2012 by Jonny Schulz. All rights reserved.
 
 =cut
 
@@ -168,25 +232,53 @@ sub connect {
         local $SIG{__DIE__} = $self->{__alarm_sub};
         alarm($self->{options}->{timeout} || 10);
 
+        $self->log->notice("connect to rabbitmq $self->{host}:$self->{options}->{port}");
+
         $self->rmq->connect(
             $self->{host},
             $self->{options}
         );
 
+        $self->log->notice("open channel $self->{channel}");
+
         $self->rmq->channel_open(
             $self->{channel}
         );
 
+        $self->log->notice(
+            "declare exchange $self->{exchange}",
+            "type $self->{exchange_type}",
+            "durable $self->{exchange_durable}",
+            "auto_delete $self->{exchange_auto_delete}",
+            "on channel $self->{channel}"
+         );
+
         $self->rmq->exchange_declare(
             $self->{channel},
             $self->{exchange},
-            { exchange_type => $self->{exchange_type} }
+            {
+                exchange_type => $self->{exchange_type},
+                durable => $self->{exchange_durable},
+                auto_delete => $self->{exchange_auto_delete}
+            }
+        );
+
+        $self->log->notice(
+            "declare queue $self->{queue}",
+            "exclusive $self->{queue_exclusive}",
+            "durable $self->{queue_durable}",
+            "auto_delete $self->{queue_auto_delete}",
+            "on channel $self->{channel}"
         );
 
         $self->rmq->queue_declare(
             $self->{channel},
             $self->{queue},
-            { exclusive => 0 }
+            {
+                exclusive => $self->{queue_exclusive},
+                durable => $self->{queue_durable},
+                auto_delete => $self->{queue_auto_delete}
+            }
         );
 
         alarm(0);
@@ -275,6 +367,21 @@ sub validate {
             type => Params::Validate::SCALAR,
             default => "logstash"
         },
+        queue_durable => {
+            type => Params::Validate::SCALAR,
+            regex => qr/^(0|1|true|false)\z/,
+            default => 0,
+        },
+        queue_exclusive => {
+            type => Params::Validate::SCALAR,
+            regex => qr/^(0|1|true|false)\z/,
+            default => 0,
+        },
+        queue_auto_delete => {
+            type => Params::Validate::SCALAR,
+            regex => qr/^(0|1|true|false)\z/,
+            default => 0,
+        },
         exchange => {
             type => Params::Validate::SCALAR,
             default => "logstash"
@@ -282,6 +389,16 @@ sub validate {
         exchange_type => {
             type => Params::Validate::SCALAR,
             default => "direct"
+        },
+        exchange_durable => {
+            type => Params::Validate::SCALAR,
+            regex => qr/^(0|1|true|false)\z/,
+            default => 0,
+        },
+        exchange_auto_delete => {
+            type => Params::Validate::SCALAR,
+            regex => qr/^(0|1|true|false)\z/,
+            default => 0,
         },
         vhost => {
             type => Params::Validate::SCALAR,
@@ -304,13 +421,26 @@ sub validate {
         },
     });
 
-    my %opts;
+    my %opts = map { $_ => 0 } qw(
+        host channel
+        queue queue_durable queue_exclusive queue_auto_delete
+        exchange exchange_type exchange_durable exchange_auto_delete
+    );
 
-    foreach my $key (qw/host channel queue exchange exchange_type/) {
+    foreach my $key (keys %opts) {
         $opts{$key} = delete $options{$key};
     }
 
     $opts{options} = \%options;
+
+    foreach my $key (qw/queue_durable queue_exclusive queue_auto_delete exchange_durable exchange_auto_delete/) {
+        if ($opts{$key} eq "false") {
+            $opts{$key} = 0;
+        } elsif ($opts{$key} eq "true") {
+            $opts{$key} = 1;
+        }
+    }
+
     return \%opts;
 }
 
