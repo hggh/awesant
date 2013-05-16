@@ -6,6 +6,7 @@ my @modules = qw(
     Awesant::Output::Redis
     Awesant::Output::Screen
     Awesant::Output::Socket
+    Awesant::Output::Rabbitmq
     Awesant::Input::File
     Awesant::Input::Socket
 );
