@@ -62,6 +62,12 @@ See http://www.rabbitmq.com/uri-spec.html for more information.
 
 Default: /
 
+=head2 exchange, exchange_type
+
+The name of the exchange to bind and the type.
+
+Default: logstash/direct
+
 =head2 heartbeat, frame_max, channel_max
 
 See http://search.cpan.org/~jesus/Net--RabbitMQ/RabbitMQ.pm and
@@ -111,7 +117,7 @@ Jonny Schulz <support(at)bloonix.de>.
 
 =head1 COPYRIGHT
 
-Copyright (C) 2012 by Jonny Schulz. All rights reserved.
+Copyright (C) 2013 by Jonny Schulz. All rights reserved.
 
 =cut
 
@@ -160,15 +166,27 @@ sub connect {
     eval {
         local $SIG{ALRM} = $self->{__timeout_sub};
         local $SIG{__DIE__} = $self->{__alarm_sub};
-        alarm($timeout);
+        alarm($self->{options}->{timeout} || 10);
 
         $self->rmq->connect(
             $self->{host},
             $self->{options}
         );
 
-        $self->rmq->open_channel(
+        $self->rmq->channel_open(
             $self->{channel}
+        );
+
+        $self->rmq->exchange_declare(
+            $self->{channel},
+            $self->{exchange},
+            { exchange_type => $self->{exchange_type} }
+        );
+
+        $self->rmq->queue_declare(
+            $self->{channel},
+            $self->{queue},
+            { exclusive => 0 }
         );
 
         alarm(0);
@@ -214,7 +232,7 @@ sub push {
             local $SIG{ALRM} = sub { die "disconnect timeout" };
             local $SIG{__DIE__} = sub { alarm(0) };
             alarm(3);
-            $self->disconnect
+            $self->disconnect;
             alarm(0);
         };
         return undef;
@@ -257,6 +275,14 @@ sub validate {
             type => Params::Validate::SCALAR,
             default => "logstash"
         },
+        exchange => {
+            type => Params::Validate::SCALAR,
+            default => "logstash"
+        },
+        exchange_type => {
+            type => Params::Validate::SCALAR,
+            default => "direct"
+        },
         vhost => {
             type => Params::Validate::SCALAR,
             default => "/",
@@ -278,16 +304,14 @@ sub validate {
         },
     });
 
-    my $host = delete $options{host};
-    my $channel = delete $options{channel};
-    my $queue = delete $options{queue};
+    my %opts;
 
-    return {
-        host => $host,
-        channel => $channel,
-        queue => $queue,
-        options => \%options
-    };
+    foreach my $key (qw/host channel queue exchange exchange_type/) {
+        $opts{$key} = delete $options{$key};
+    }
+
+    $opts{options} = \%options;
+    return \%opts;
 }
 
 1;
