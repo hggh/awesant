@@ -74,6 +74,7 @@ Currently supported inputs:
 Currently supported outputs:
 
 * Redis: <https://github.com/bloonix/awesant/blob/master/OutputRedisOptions.md>
+* Rabbitmq: <https://github.com/bloonix/awesant/blob/master/OutputRabbitmqOptions.md>
 * Screen: <https://github.com/bloonix/awesant/blob/master/OutputScreenOptions.md>
 * Socket: <https://github.com/bloonix/awesant/blob/master/OutputSocketOptions.md>
 
