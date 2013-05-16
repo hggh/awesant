@@ -2,6 +2,20 @@
 
 Awesant is a simple log shipper for logstash. It ships logs from multiple inputs to multiple outputs.
 
+## Plugins
+
+Currently supported inputs:
+
+* File: <https://github.com/bloonix/awesant/blob/master/InputFileOptions.md>
+* Socket: <https://github.com/bloonix/awesant/blob/master/InputSocketOptions.md>
+
+Currently supported outputs:
+
+* Redis: <https://github.com/bloonix/awesant/blob/master/OutputRedisOptions.md>
+* RabbitMQ: <https://github.com/bloonix/awesant/blob/master/OutputRabbitmqOptions.md>
+* Screen: <https://github.com/bloonix/awesant/blob/master/OutputScreenOptions.md>
+* Socket: <https://github.com/bloonix/awesant/blob/master/OutputSocketOptions.md>
+
 ## Pre-installation
 
 Awesant is written in Perl. So you have to install some Perl packages at first
@@ -15,7 +29,9 @@ to run Awesant on your machine. Let us have a look on what you need to install:
     Time::HiRes
     JSON
 
-If you want to transport logs via SSL and the Socket output then you need to install IO::Socket::SSL as well.
+If you want to transport logs via SSL and the Socket output then you need to install IO::Socket::SSL.
+
+If you want to transport logs to RabbitMQ you need to install Net::RabbitMQ.
 
 You can install the packages with your favorite package manager or with cpan tool.
 
@@ -66,15 +82,15 @@ The configuration style is very simple. You can define inputs, outputs, a logger
 
 Inputs are the log files you want to ship. Outputs are the transports you want to use to ship the log files.
 
-Currently supported inputs:
+Input configuration options:
 
 * File: <https://github.com/bloonix/awesant/blob/master/InputFileOptions.md>
 * Socket: <https://github.com/bloonix/awesant/blob/master/InputSocketOptions.md>
 
-Currently supported outputs:
+Output configuration options:
 
 * Redis: <https://github.com/bloonix/awesant/blob/master/OutputRedisOptions.md>
-* Rabbitmq: <https://github.com/bloonix/awesant/blob/master/OutputRabbitmqOptions.md>
+* RabbitMQ: <https://github.com/bloonix/awesant/blob/master/OutputRabbitmqOptions.md>
 * Screen: <https://github.com/bloonix/awesant/blob/master/OutputScreenOptions.md>
 * Socket: <https://github.com/bloonix/awesant/blob/master/OutputSocketOptions.md>
 
@@ -242,7 +258,3 @@ or on any host to transfer the logs to redis.
         }
     }
 
-# TODOS
-
-* Does we really need another transports? Redis is so cool :-)
-* Add proto udp to Input/Socket.pm and Output/Socket.pm.
