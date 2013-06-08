@@ -2,7 +2,11 @@
 
 Awesant is a simple log shipper for logstash. It ships logs from multiple inputs to multiple outputs.
 
-## Plugins
+## Plugins and Options
+
+Global Options for each plugin:
+
+* <https://github.com/bloonix/awesant/blob/master/GlobalOptions.md>
 
 Currently supported inputs:
 
@@ -81,22 +85,6 @@ The main configuration file of the Awesant agent is
 The configuration style is very simple. You can define inputs, outputs, a logger and some global configuration parameter.
 
 Inputs are the log files you want to ship. Outputs are the transports you want to use to ship the log files.
-
-Input configuration options:
-
-* File: <https://github.com/bloonix/awesant/blob/master/InputFileOptions.md>
-* Socket: <https://github.com/bloonix/awesant/blob/master/InputSocketOptions.md>
-
-Output configuration options:
-
-* Redis: <https://github.com/bloonix/awesant/blob/master/OutputRedisOptions.md>
-* RabbitMQ: <https://github.com/bloonix/awesant/blob/master/OutputRabbitmqOptions.md>
-* Screen: <https://github.com/bloonix/awesant/blob/master/OutputScreenOptions.md>
-* Socket: <https://github.com/bloonix/awesant/blob/master/OutputSocketOptions.md>
-
-Global configuration options:
-
-* <https://github.com/bloonix/awesant/blob/master/GlobalOptions.md>
 
 Example configuration:
 
