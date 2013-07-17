@@ -368,7 +368,7 @@ sub load_input {
         }
     }
 
-    if (%{$no_worker_inputs}) {
+    if ($no_worker_inputs) {
         push @{$self->inputs}, $no_worker_inputs;
     }
 }
