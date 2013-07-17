@@ -1,3 +1,11 @@
+awesant (0.10-1) unstable; urgency=low
+
+    * Added new output Rabbitmq.
+    * Fixed "undefined value as a hash reference ... line 371" if
+      only one input exists that has workers configured.
+
+ -- Jonny Schulz <js@bloonix.de>  Wed, 17 Jul 2013 10:12:00 +0100
+
 awesant (0.9-1) unstable; urgency=low
 
     * Fixed: add_field does not work if format is set to json_event.

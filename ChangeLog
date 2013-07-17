@@ -1,6 +1,8 @@
-awesant (0.10) released at XXXX-XX-XX
+awesant (0.10) released at 2013-07-17
 
     * Added new output Rabbitmq.
+    * Fixed "undefined value as a hash reference ... line 371" if
+      only one input exists that has workers configured.
 
 awesant (0.9) released at 2013-04-19
 

@@ -1,6 +1,6 @@
 Summary: Awesant is a log shipper for logstash.
 Name: awesant
-Version: 0.9
+Version: 0.10
 Release: 1%{?dist}
 License: distributable
 Group: System Environment/Daemons
@@ -86,6 +86,10 @@ rm -rf %{buildroot}
 %{_mandir}/man?/Awesant::*
 
 %changelog
+* Wed Jul 17 2013 Jonny Schulz <js@bloonix.de> - 0.10-1
+- Added new output Rabbitmq.
+- Fixed "undefined value as a hash reference ... line 371" if
+  only one input exists that has workers configured.
 * Fri Apr 19 2013 Jonny Schulz <js@bloonix.de> - 0.9-1
 - Fixed: add_field does not work if format is set to json_event.
 * Sun Apr 15 2013 Jonny Schulz <js@bloonix.de> - 0.8-1
