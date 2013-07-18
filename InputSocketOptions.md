@@ -33,11 +33,17 @@ Default: tcp
 
 If you want to use ssl connections then you can set the path to your ca, certificate and key file.
 
+The option ssl_verify_mode can be set to SSL_VERIFY_PEER, SSL_VERIFY_FAIL_IF_NO_PEER_CERT,
+SSL_VERIFY_CLIENT_ONCE or SSL_VERIFY_NONE. Lowercase is allowed.
+
 This options are equivalent to the options of IO::Socket::SSL.
 
 See cpan http://search.cpan.org/~sullr/IO-Socket-SSL/.
 
-Default: no default
+Default: there are no defaults set, so you have to check the defaults of IO::Socket::SSL.
+Please check the right version of IO::Socket::SSL.
+
+    perl -MIO::Socket::SSL -e 'print $IO::Socket::SSL::VERSION'
 
 ### response
 

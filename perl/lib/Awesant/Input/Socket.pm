@@ -61,7 +61,10 @@ This options are equivalent to the options of IO::Socket::SSL.
 
 See cpan http://search.cpan.org/~sullr/IO-Socket-SSL/.
 
-Default: no default
+Default: there are no defaults set, so you have to check the defaults of IO::Socket::SSL.
+Please check the right version of IO::Socket::SSL.
+
+    perl -MIO::Socket::SSL -e 'print $IO::Socket::SSL::VERSION'
 
 =head2 response
 
