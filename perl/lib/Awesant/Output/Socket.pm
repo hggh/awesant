@@ -90,6 +90,9 @@ Default: yes
 
 If you want to use ssl connections to the server you can set the path to your ca, certificate and key file.
 
+The option ssl_verify_mode can be set to SSL_VERIFY_PEER, SSL_VERIFY_FAIL_IF_NO_PEER_CERT,
+SSL_VERIFY_CLIENT_ONCE or SSL_VERIFY_NONE. Lowercase is allowed.
+
 This options are equivalent to the options of IO::Socket::SSL.
 
 See cpan http://search.cpan.org/~sullr/IO-Socket-SSL/.
