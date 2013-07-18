@@ -29,7 +29,7 @@ The protocol to use. At the moment only tcp is allowed.
 
 Default: tcp
 
-### ssl_ca_file, ssl_cert_file, ssl_key_file
+### ssl_ca_file, ssl_cert_file, ssl_key_file, ssl_verify_mode
 
 If you want to use ssl connections then you can set the path to your ca, certificate and key file.
 

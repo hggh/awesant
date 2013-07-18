@@ -192,6 +192,9 @@ You can use the script 'awesant-create-cert' to create a cert bundle for Awesant
 
     awesant-create-cert /etc/awesant 4096 10000
 
+Please note that the certificates should not be used for criticial production environments.
+The created certificates are not trusted.
+
 ## Awesant output socket
 
 Create the following configuration on the machines with the log files you want to ship.

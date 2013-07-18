@@ -70,7 +70,7 @@ Use persistent connections or not.
 
 Default: yes
 
-### ssl_ca_file, ssl_cert_file, ssl_key_file
+### ssl_ca_file, ssl_cert_file, ssl_key_file, ssl_verify_mode
 
 If you want to use ssl connections to the server you can set the path to your ca, certificate and key file.
 
