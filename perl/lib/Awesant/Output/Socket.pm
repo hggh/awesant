@@ -392,6 +392,11 @@ sub validate {
             type => Params::Validate::SCALAR,
             optional => 1,
         },
+        ssl_verify_mode => {
+            type => Params::Validate::SCALAR,
+            optional => 1,
+            regex => qr!^SSL_VERIFY_(PEER|FAIL_IF_NO_PEER_CERT|CLIENT_ONCE|NONE)\z!,
+        },
     });
 
     if ($options{persistent} eq "no") {
@@ -419,6 +424,20 @@ sub validate {
     while (my ($opt, $modopt) = each %sockopts) {
         if ($options{$opt}) {
             $options{sockopts}{$modopt} = $options{$opt};
+        }
+    }
+
+    if ($options{ssl_verify_mode}) {
+        $options{ssl_verify_mode} = uc($options{ssl_verify_mode});
+
+        if ($options{ssl_verify_mode} eq "SSL_VERIFY_PEER") {
+            $options{sockopts}{SSL_verify_mode} = 0x01;
+        } elsif ($options{ssl_verify_mode} eq "SSL_VERIFY_FAIL_IF_NO_PEER_CERT") {
+            $options{sockopts}{SSL_verify_mode} = 0x02;
+        } elsif ($options{ssl_verify_mode} eq "SSL_VERIFY_CLIENT_ONCE") {
+            $options{sockopts}{SSL_verify_mode} = 0x04;
+        } elsif ($options{ssl_verify_mode} eq "SSL_VERIFY_NONE") {
+            $options{sockopts}{SSL_verify_mode} = 0x00;
         }
     }
 
