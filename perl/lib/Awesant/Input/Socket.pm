@@ -342,10 +342,8 @@ sub validate {
         if ($options{ssl_verify_mode} eq "SSL_VERIFY_PEER") {
             $options{sockopts}{SSL_verify_mode} = 0x01;
         } elsif ($options{ssl_verify_mode} eq "SSL_VERIFY_FAIL_IF_NO_PEER_CERT") {
-	    # Set SSL_VERIFY_PEER as well, as this is what they must mean.
             $options{sockopts}{SSL_verify_mode} = 0x03;
         } elsif ($options{ssl_verify_mode} eq "SSL_VERIFY_CLIENT_ONCE") {
-	    # Set SSL_VERIFY_PEER as well, as this is what they must mean.
             $options{sockopts}{SSL_verify_mode} = 0x05;
         } elsif ($options{ssl_verify_mode} eq "SSL_VERIFY_NONE") {
             $options{sockopts}{SSL_verify_mode} = 0x00;

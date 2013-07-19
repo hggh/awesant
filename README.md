@@ -228,8 +228,8 @@ Create the following configuration on the machines with the log files you want t
             port 25801
             auth your-very-very-very-long-password
             ssl_ca_file /etc/awesant/certs/ssl.crt
-	    # This should be on by default, but we set it to be safe.
-	    ssl_verify_mode SSL_VERIFY_PEER
+            # This should be on by default, but we set it to be safe.
+            ssl_verify_mode SSL_VERIFY_PEER
         }
     }
 
