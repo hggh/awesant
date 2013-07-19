@@ -197,11 +197,14 @@ The scenario could looks like
     Awesant output socket -> Awesant input socket -> Redis -> Logstash
 
 You can use the script 'awesant-create-cert' to create a cert bundle for Awesant.
+This should be run from the machine where the redis and the input socket is to be run.
 
     awesant-create-cert /etc/awesant 4096 10000
 
-Please note that the certificates should not be used for criticial production environments.
-The created certificates are not trusted.
+You should now copy the /etc/awesant/certs/ca.crt to /etc/awesant/certs/ca.crt
+on any of the log shipping machines you wish to configure.
+
+    scp /etc/awesant/certs/ca.crt root@logshippingnode:/etc/awesant/certs/
 
 ## Awesant output socket
 
@@ -224,8 +227,9 @@ Create the following configuration on the machines with the log files you want t
             host redis-machine-remote-addr
             port 25801
             auth your-very-very-very-long-password
-            ssl_cert_file /etc/awesant/certs/ssl.crt
-            ssl_key_file  /etc/awesant/certs/ssl.key
+            ssl_ca_file /etc/awesant/certs/ssl.crt
+	    # This should be on by default, but we set it to be safe.
+	    ssl_verify_mode SSL_VERIFY_PEER
         }
     }
 
