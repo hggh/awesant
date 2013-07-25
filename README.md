@@ -25,6 +25,7 @@ Currently supported outputs:
 Awesant is written in Perl. So you have to install some Perl packages at first
 to run Awesant on your machine. Let us have a look at what you need to install:
 
+    Class::Accessor
     Log::Handler
     Params::Validate
     IO::Socket

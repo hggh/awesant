@@ -13,6 +13,7 @@ my $build = Module::Build->new(
     #},
     requires => {
         perl => "5.006_001",
+        "Class::Accessor"  => 0,
         "Fcntl"            => 0,
         "IO::Select"       => 0,
         "IO::Socket"       => 0,
