@@ -227,8 +227,8 @@ sub run {
     $self->write_pidfile;
     $self->get_config;
     $self->create_logger;
-    $self->load_output;
     $self->load_input;
+    $self->load_output;
     $self->daemonize;
     $self->remove_pidfile;
 }
@@ -261,6 +261,16 @@ sub load_output {
 
             # Create a new output object.
             my $object = $module->new($config);
+
+            $types =~ s/\s+//;
+            $types =~ s/\s+\z//;
+
+            if ($types eq "*") {
+                foreach my $type (@{$self->inputs}}) {
+                    push @{$self->outputs->{$type}}, $object;
+                }
+                next; # output
+            }
 
             # Multiple types are allowed for outputs.
             foreach my $type (split /,/, $types) {
