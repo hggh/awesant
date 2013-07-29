@@ -20,16 +20,20 @@ build:
 	if test "$(WITHOUT_PERL)" = "0" ; then \
 		$(PERL) perl/Build manifest; \
 		if test "$(PERL_DESTDIR)" ; then \
-	        set -e; cd perl; \
+		    set -e; cd perl; \
 			$(PERL) Build.PL --installdirs $(PERL_INSTALLDIRS); \
 		else \
-	        set -e; cd perl; \
+		    set -e; cd perl; \
 			$(PERL) Build.PL --installdirs $(PERL_INSTALLDIRS) --destdir $(PERL_DESTDIR); \
 		fi; \
 		$(PERL) Build; \
 	fi;
 
 test:
+	if test "$(CVERSION)" != "$(MVERSION)" ; then \
+	    echo "Versions doesn't match"; \
+	    exit 1; \
+	fi;
 	if test "$(WITHOUT_PERL)" = "0" ; then \
 		set -e; cd perl; \
 		$(PERL) Build test; \
