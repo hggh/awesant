@@ -223,6 +223,10 @@ sub run {
         hostname => Sys::Hostname::hostname(),
     }, $class;
 
+    # Store all input types. This is necessary to
+    # bind wildcard outputs to all input types.
+    $self->{input_types} = { };
+
     # The main workflow.
     $self->write_pidfile;
     $self->get_config;
@@ -266,7 +270,9 @@ sub load_output {
             $types =~ s/\s+\z//;
 
             if ($types eq "*") {
-                foreach my $type (@{$self->inputs}) {
+                $self->log->info("wildcard output configured");
+                foreach my $type (keys %{$self->{input_types}}) {
+                    $self->log->info("connect wildcard output with input '$type'");
                     push @{$self->outputs->{$type}}, $object;
                 }
                 next; # output
@@ -367,6 +373,7 @@ sub load_input {
                         $validated->{object} = $module->new(\%p);
                         $validated->{remove_on_errors} = 1;
                         push @{$input_group->{inputs}}, $validated;
+                        $self->{input_types}->{ $validated->{type} }++;
                     }
                 }
             } else {
@@ -374,6 +381,7 @@ sub load_input {
                 $validated->{time} = scalar Time::HiRes::gettimeofday();
                 $validated->{object} = $module->new($plugin_config);
                 push @{$input_group->{inputs}}, $validated;
+                $self->{input_types}->{ $validated->{type} }++;
             }
         }
     }
