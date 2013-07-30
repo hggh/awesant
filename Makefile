@@ -18,7 +18,6 @@ build:
 	sed -i "s!@@CONFIG@@!$(CONFDIR)/awesant/agent.conf!" etc/init.d/awesant-agent; \
 	sed -i "s!@@CONFIG@@!$(LOGDIR)/awesant/agent.log!" etc/init.d/awesant-agent; \
 	if test "$(WITHOUT_PERL)" = "0" ; then \
-		$(PERL) perl/Build manifest; \
 		if test "$(PERL_DESTDIR)" ; then \
 		    set -e; cd perl; \
 			$(PERL) Build.PL --installdirs $(PERL_INSTALLDIRS); \
@@ -26,6 +25,7 @@ build:
 		    set -e; cd perl; \
 			$(PERL) Build.PL --installdirs $(PERL_INSTALLDIRS) --destdir $(PERL_DESTDIR); \
 		fi; \
+		$(PERL) Build manifest; \
 		$(PERL) Build; \
 	fi;
 
