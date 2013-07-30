@@ -39,7 +39,7 @@ __start() {
     if test -z "$DAEMON_EXIST" ; then
         $DAEMON --config "$CONFIG" --pidfile "$PIDFILE" &
 
-        for i in `seq 1 3` ; do
+        for i in {1..3} ; do
             __check_awesant_agent
             if test ! -z "$DAEMON_EXIST" ; then
                 break
@@ -68,7 +68,7 @@ __stop() {
     else
         kill -15 $DAEMON_PID
 
-        for i in `seq 1 15` ; do
+        for i in {1..15} ; do
             __check_awesant_agent
             if test -z "$DAEMON_EXIST" ; then
                 break
