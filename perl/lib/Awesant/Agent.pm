@@ -272,7 +272,7 @@ sub load_output {
             if ($types eq "*") {
                 $self->log->info("wildcard output configured");
                 foreach my $type (keys %{$self->{input_types}}) {
-                    $self->log->info("connect wildcard output with input '$type'");
+                    $self->log->info("bind wildcard output to input type '$type'");
                     push @{$self->outputs->{$type}}, $object;
                 }
                 next; # output
