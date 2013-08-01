@@ -16,6 +16,7 @@ CONFIG=@@CONFIG@@
 RUNDIR=@@RUNDIR@@
 PIDFILE=$RUNDIR/agent.pid
 DAEMON=@@DAEMON@@
+OS=$(uname)
 
 [ -f /etc/sysconfig/$BASENAME ] && . /etc/sysconfig/$BASENAME
 [ -f /etc/default/$BASENAME ] && . /etc/default/$BASENAME
@@ -29,7 +30,10 @@ __check_awesant_agent() {
     if test -e "$PIDFILE" ; then
         DAEMON_PID=$(cat $PIDFILE 2>/dev/null)
         if test -n "$DAEMON_PID" ; then
-            DAEMON_EXIST=$(ps $DAEMON_PID | grep awesant)
+            case $OS in
+              SunOS) DAEMON_EXIST=$(ps -ef | grep $DAEMON_PID | grep awesant) ;;
+                  *) DAEMON_EXIST=$(ps $DAEMON_PID | grep awesant) ;;
+            esac
         fi
     fi
 }
