@@ -94,13 +94,22 @@ Inputs are the log files you want to ship. Outputs are the transports you want t
 
 Example configuration:
 
+    # Print some statistics to the log file.
+    # Default: no
+    #benchmark yes
+
     # How often to poll inputs for new events.
     # Default: 500 (ms)
-    poll 500
+    #poll 500
 
     # How many lines to request from the inputs by each poll.
     # Default: 100 (count)
-    lines 100
+    #lines 100
+
+    # How does poll and lines work in combination?
+    # If 100 lines could be read then the agent tries to read the next 100 lines.
+    # If less than 100 lines could be read then the end of the log file was reached
+    # and the agent waits 500 ms before the agent tries to read the next lines.
 
     input {
         file {

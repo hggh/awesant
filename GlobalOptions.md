@@ -1,3 +1,29 @@
+# Global options
+
+### benchmark
+
+Print some benchmark statistics to the log file.
+
+Default: no
+
+### poll
+
+How often to poll inputs for new events.
+
+Default: 500
+
+### lines
+
+How many lines to request from the inputs by each poll.
+
+Default: 100
+
+## How does the options 'poll' and 'lines' work in combination?
+
+If 100 lines could be read then the agent tries to read the next 100 lines.
+If less than 100 lines could be read then the end of the log file was reached
+and the agent waits 500 ms before the agent tries to read the next lines.
+
 # Global input and output options
 
 ## Global output options
