@@ -212,11 +212,18 @@ sub check_logfile {
     my $inode = $self->{inode};
     my $fhlog = $self->{fhlog};
 
-    # If the logfile is rotated but not finished then the logfile
-    # shouldn't be closed, otherwise we will miss some lines...
+    # If the end logfile of the logfile is not reached... go forward.
     if ($self->{reached_end_of_file} == 0) {
         #$self->log->debug("skip check logfile - reached_end_of_file=$self->{reached_end_of_file}");
         return 1;
+    }
+
+    # If the end of the logfile is reached and we see that the logfile does
+    # not exist or the inode has changed, the rest of the logfile is read.
+    # Then, if reached_end_of_file is set higher than 1 it means that the
+    # real end is reached.
+    if ($self->{reached_end_of_file} == 1 && (!-e $file || $inode != (stat($file))[1])) {
+        return 1
     }
 
     # Clean up the eof marker
@@ -281,7 +288,7 @@ sub pull {
     # checked if the file was rotated.
     if ($max_lines > 0) {
         $self->log->debug("reached end of file");
-        $self->{reached_end_of_file} = 1;
+        $self->{reached_end_of_file}++;
     }
 
     return $lines;
