@@ -1,5 +1,10 @@
 # Awesant::Input::File
 
+## Description
+
+Log files as input. Log file rotation is supported, but note that
+you should configure delayed compression for log files.
+
 ## Options
 
 ### path

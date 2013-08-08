@@ -1,5 +1,9 @@
 # Awesant::Input::Socket
 
+## Description
+
+Listen on a TCP or UDP socket and ship events.
+
 ## Options
 
 ### host

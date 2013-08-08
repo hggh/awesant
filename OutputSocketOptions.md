@@ -1,5 +1,9 @@
 # Awesant::Output::Socket
 
+## Description
+
+This transport module connects to a tcp socket and ships data plain or via ssl.
+
 ## Options
 
 ### host

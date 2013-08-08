@@ -1,5 +1,9 @@
 # Awesant::Output::Rabbitmq
 
+## Description
+
+This transport module connects and shipts log data to RabbitMQ.
+
 ## Options
 
 ### host

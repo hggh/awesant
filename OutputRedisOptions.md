@@ -1,5 +1,9 @@
 # Awesant::Output::Redis
 
+## Description
+
+This transport module connects to a Redis database and ships data via LPUSH.
+
 ## Options
 
 ### host

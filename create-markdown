@@ -15,9 +15,10 @@ foreach my $mod (@modules) {
     my $file = "perl/lib/$mod.pm";
     $file =~ s!::!/!g;
     open my $in, "<", $file or die $!;
+    my $description;
     my $content = do { local $/; <$in> };
     close $in;
-    $content =~ s/.+=head1\sOPTIONS\s*\n(.+)=head1\sMETHODS.+/$1/s;
+    ($description, $content) = $content =~ /.+=head1\sDESCRIPTION\n+(.+)=head1\sOPTIONS\s*\n(.+)=head1\sMETHODS.+/s;
     $content =~ s/=head1/##/g;
     $content =~ s/=head2/###/g;
     my $readme = "${mod}Options.md";
@@ -25,6 +26,8 @@ foreach my $mod (@modules) {
     $readme =~ s/^Awesant//;
     open my $out, ">", $readme or die $!;
     print $out "# $mod\n\n";
+    print $out "## Description\n\n";
+    print $out $description;
     print $out "## Options\n\n";
     print $out $content;
     close $out;
