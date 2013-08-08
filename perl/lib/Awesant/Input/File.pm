@@ -221,7 +221,7 @@ sub check_logfile {
     # If the end of the logfile is reached and we see that the logfile does
     # not exist or the inode has changed, the rest of the logfile is read.
     # Then, if reached_end_of_file is set higher than 9 it means that the
-    # real end is reached. (reached_end_of_file of 10 = 10 loops * 500ms = 5seconds)
+    # real end is reached. (reached_end_of_file of 20 = 20 loops * 500ms = 10seconds)
     if ($self->{reached_end_of_file} < 20 && (!-e $file || $inode != (stat($file))[1])) {
         return 1
     }
