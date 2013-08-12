@@ -269,15 +269,6 @@ sub load_output {
             $types =~ s/\s+//;
             $types =~ s/\s+\z//;
 
-            if ($types eq "*") {
-                $self->log->info("wildcard output configured");
-                foreach my $type (keys %{$self->{input_types}}) {
-                    $self->log->info("bind wildcard output to input type '$type'");
-                    push @{$self->outputs->{$type}}, $object;
-                }
-                next; # output
-            }
-
             # Multiple types are allowed for outputs.
             foreach my $type (split /,/, $types) {
                 $type =~ s/^\s+//;
@@ -663,14 +654,25 @@ sub run_log_shipper {
             }
 
             foreach my $otype (keys %prepared_events) {
-                my $events = $prepared_events{$otype};
-                if (!exists $outputs->{$otype}) {
+                my @outputs;
+
+                foreach my $ot ($otype, "*") {
+                    if (exists $outputs->{$ot}) {
+                        push @outputs, @{$outputs->{$ot}};
+                    }
+                }
+
+                if (!@outputs) {
                     $self->log->warning(
                         "received events from input type $itype",
                         "with an non existent output type $otype"
                     );
+                    next;
                 }
-                foreach my $output (@{$outputs->{$otype}}) {
+
+                my $events = $prepared_events{$otype};
+
+                foreach my $output (@outputs) {
                     for (my $i=0; $i <= $#{$events}; $i++) {
                         if (!$output->push($events->[$i])) {
                             my $left  = [ @{$lines_by_type{$otype}}[$i..$#{$events}] ];
