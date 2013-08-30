@@ -1,6 +1,6 @@
 Summary: Awesant is a log shipper for logstash.
 Name: awesant
-Version: 0.10
+Version: 0.11
 Release: 1%{?dist}
 License: distributable
 Group: System Environment/Daemons
@@ -86,6 +86,15 @@ rm -rf %{buildroot}
 %{_mandir}/man?/Awesant::*
 
 %changelog
+* Fri Aug 30 2013 Jonny Schulz <js@bloonix.de> - 0.11-1
+- Added option ssl_verify_mode to Input/Socket.pm and Output/Socket.pm.
+- Fixed dependencies of Awesant. Class::Accessor was missed.
+- Modified the init script to make it runable on Solaris.
+- It's now possible to use a wildcard for output types.
+- Improved logrotate handling - the file input waits up to 10 seconds
+  for new lines before close the rotated file.
+- Fixed a typo in the init script that removes insserv warnings on Debian:
+  'insserv: warning: script 'awesant-agent' missing LSB tags and overrides'
 * Wed Jul 17 2013 Jonny Schulz <js@bloonix.de> - 0.10-1
 - Added new output Rabbitmq.
 - Fixed "undefined value as a hash reference ... line 371" if

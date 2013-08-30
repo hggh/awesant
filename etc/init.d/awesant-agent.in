@@ -1,6 +1,6 @@
 #!/bin/bash
 
-### BEGIN INIT INF
+### BEGIN INIT INFO
 # Provides:         awesant
 # Required-Start:   $network
 # Required-Stop:    $syslog
