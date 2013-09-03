@@ -165,6 +165,7 @@ With this agent configuration your logstash should be configured as follows:
 
 * It is possible to set a comma separated list of types for outputs.
 * It is possible to set wildcards for file inputs.
+* It is possible to set a wildcard as output type.
 * If a wildcard is used then Awesant will watch the glob pattern for new files.
 * If a new file is created then Awesant will tail the new file automatically, so you do not need to restart the service.
 
@@ -193,6 +194,16 @@ then you can use one output for multiple inputs:
 
 In this case the redis-output is bound to the inputs 'apache-access-log'
 and 'syslog'.
+
+If you want to match all input types you can use a wildcard as output type:
+
+    output {
+        redis {
+            type *      # match all input types
+            key logstash
+            host 127.0.0.1
+        }
+    }
 
 When the log events are pushed to the output the type of the input is used for
 the JSON event. This means that '@type' is set to the type of the input, not of
