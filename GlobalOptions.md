@@ -42,6 +42,10 @@ Label to bind the input to outputs.
 
 Value: STRING
 
+It is possible to set a comma separated list of types.
+
+Since v0.11 it is possible to use '*' to match all types.
+
 ### format
 
 This option is equivalent to the option 'format' of logstash inputs.
