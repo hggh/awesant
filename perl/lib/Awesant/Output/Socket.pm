@@ -29,8 +29,6 @@ It's possible to set a comma separated list of failover hosts.
         port 4711
     }
 
-If the connection to one host failed then a connection to the next server is established.
-
 Default: 127.0.0.1
 
 =head2 port

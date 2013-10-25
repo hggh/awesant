@@ -8,7 +8,12 @@ This transport module connects to a Redis database and ships data via LPUSH.
 
 ### host
 
-The hostname or ip address of the Redis server.
+The hostname or ip address of the Redis server. It's possible to pass a comma separated list of hosts.
+
+    redis {
+        host active-server, failover-server-1, failover-server-2
+        port 6379
+    }
 
 Default: 127.0.0.1
 

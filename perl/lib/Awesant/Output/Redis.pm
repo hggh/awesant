@@ -22,7 +22,12 @@ This transport module connects to a Redis database and ships data via LPUSH.
 
 =head2 host
 
-The hostname or ip address of the Redis server.
+The hostname or ip address of the Redis server. It's possible to pass a comma separated list of hosts.
+
+    redis {
+        host active-server, failover-server-1, failover-server-2
+        port 6379
+    }
 
 Default: 127.0.0.1
 
@@ -141,8 +146,7 @@ sub new {
 
     $self->{__timeout_sub} = sub {
         die join(" ",
-            "connection to redis database",
-            "$self->{host}:$self->{port}",
+            "connection to any redis server",
             "timed out after $self->{timeout} seconds",
         );
     };
@@ -158,44 +162,54 @@ sub connect {
         return $self->{sock};
     }
 
-    $self->log->notice("connect to redis server $self->{host}:$self->{port}");
+    my $hosts = $self->{hosts};
+    my @order = @$hosts;
 
-    $self->{sock} = IO::Socket::INET->new(
-        PeerAddr => $self->{host},
-        PeerPort => $self->{port},
-        Proto    => "tcp",
-    );
+    while (my $host = shift @order) {
+        push @$hosts, shift @$hosts;
+        $self->{host} = $host;
 
-    if (!$self->{sock}) {
-        $self->log->error("unable to connect to redis server $self->{host}:$self->{port} - $!");
-        return undef;
+        $self->log->notice("connect to redis server $host:$self->{port}");
+
+        $self->{sock} = IO::Socket::INET->new(
+            PeerAddr => $host,
+            PeerPort => $self->{port},
+            Proto    => "tcp",
+        );
+
+        if (!$self->{sock}) {
+            $self->log->error("unable to connect to redis server $host:$self->{port} - $!");
+            next;
+        }
+
+        $self->{sock}->autoflush(1);
+
+        $self->log->notice("connected to redis server $host:$self->{port}");
+
+        if ($self->{password}) {
+            $self->log->notice("send auth to redis server $host:$self->{port}");
+
+            $self->_send($self->{auth_client})
+                or die "unable to auth at redis database";
+        }
+
+        $self->log->notice(
+            "select database $self->{database} on",
+            "redis server $host:$self->{port}"
+        );
+
+        $self->_send($self->{select_database})
+            or die "unable to select redis database";
+
+        $self->log->notice(
+            "successfully selected database $self->{database}",
+            "on redis server $host:$self->{port}",
+        );
+
+        return $self->{sock};
     }
 
-    $self->{sock}->autoflush(1);
-
-    $self->log->notice("connected to redis server $self->{host}:$self->{port}");
-
-    if ($self->{password}) {
-        $self->log->notice("send auth to redis server $self->{host}:$self->{port}");
-
-        $self->_send($self->{auth_client})
-            or die "unable to auth at redis database";
-    }
-
-    $self->log->notice(
-        "select database $self->{database} on",
-        "redis server $self->{host}:$self->{port}"
-    );
-
-    $self->_send($self->{select_database})
-        or die "unable to select redis database";
-
-    $self->log->notice(
-        "successfully selected database $self->{database}",
-        "on redis server $self->{host}:$self->{port}",
-    );
-
-    return $self->{sock};
+    return undef;
 }
 
 sub push {
@@ -222,7 +236,7 @@ sub validate {
 
     my %options = Params::Validate::validate(@_, {
         host => {
-            type => Params::Validate::SCALAR,
+            type => Params::Validate::SCALAR | Params::Validate::ARRAYREF,
             default => "127.0.0.1",
         },
         port => {
@@ -246,6 +260,9 @@ sub validate {
         },
     });
 
+    $options{host} =~ s/\s//g;
+    $options{hosts} = [ split /,/, $options{host} ];
+
     return \%options;
 }
 
@@ -267,7 +284,7 @@ sub _send {
         alarm($timeout);
 
         my $sock = $self->connect
-            or die "unable to connect to redis server $self->{host}:$self->{port}";
+            or die "unable to connect to any redis server";
 
         my $rest = length($data);
         my $offset = 0;

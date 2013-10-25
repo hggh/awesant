@@ -128,7 +128,7 @@ Example configuration:
         redis {
             type syslog
             key syslog
-            host 127.0.0.1
+            host 192.168.10.10, 192.168.10.12 # failover
             port 6379
             database 0
             timeout 10
@@ -151,7 +151,7 @@ With this agent configuration your logstash should be configured as follows:
 
     input {
         redis {
-            host => "127.0.0.1"
+            host => "192.168.10.10"
             port => 6379
             data_type => "list"
             db => 0
