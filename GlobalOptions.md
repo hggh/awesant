@@ -1,5 +1,11 @@
 # Global options
 
+### hostname
+
+Set the hostname.
+
+Default: set by Sys::Hostname
+
 ### benchmark
 
 Print some benchmark statistics to the log file.

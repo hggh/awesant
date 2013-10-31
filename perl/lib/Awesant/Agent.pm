@@ -220,7 +220,6 @@ sub run {
         watch    => 0,      # store the files to watch for each process group
         filed    => 0,      # store the files already watched for each process group
         json     => JSON->new->utf8(),
-        hostname => Sys::Hostname::hostname(),
     }, $class;
 
     # Store all input types. This is necessary to
@@ -710,6 +709,7 @@ sub run_log_shipper {
 sub prepare_message {
     my ($self, $input, $line) = @_;
     my ($event, $type, $timestamp);
+    my $hostname = $self->config->{hostname};
 
     $self->log->debug("prepare message for input type $input->{type} path $input->{path}");
     $self->log->debug("event: $line");
@@ -737,8 +737,8 @@ sub prepare_message {
         $timestamp =~ s/UTC\z/Z/;
         $event = {
             '@timestamp'   => $timestamp,
-            '@source'      => "file://" . $self->{hostname} . $input->{path},
-            '@source_host' => $self->{hostname},
+            '@source'      => "file://" . $hostname . $input->{path},
+            '@source_host' => $hostname,
             '@source_path' => $input->{path},
             '@type'        => $input->{type},
             '@fields'      => $input->{add_field},
@@ -941,6 +941,10 @@ sub validate_config {
         lines => {
             type => Params::Validate::SCALAR,
             default => 100,
+        },
+        hostname => {
+            type => Params::Validate::SCALAR,
+            default => Sys::Hostname::hostname(),
         },
         output => {
             type => Params::Validate::HASHREF,
