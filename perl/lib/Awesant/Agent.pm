@@ -740,7 +740,7 @@ sub prepare_message {
 
         if ($self->config->{milliseconds}) {
             if (length $microseconds < 3) {
-                $microseconds .= "0" x 3 - length $microseconds;
+                $microseconds .= "0" x (3 - length $microseconds);
             }
             $microseconds =~ s/^(\d\d\d).*/$1/;
             $timestamp =~ s/\+/.$microseconds+/;
