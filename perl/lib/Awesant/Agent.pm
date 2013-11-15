@@ -205,7 +205,7 @@ use constant PARENT_PID => $$;
 # Just some simple accessors
 __PACKAGE__->mk_accessors(qw/config log json watch filed inputs outputs/);
 
-our $VERSION = "0.11";
+our $VERSION = "0.12";
 
 sub run {
     my ($class, %args) = @_;
@@ -727,7 +727,9 @@ sub prepare_message {
             $event->{'@fields'}->{$field} = $input->{add_field}->{$field};
         }
     } elsif ($input->{format} eq "plain") {
-        $timestamp = POSIX::strftime("%Y-%m-%dT%H:%M:%S%z", localtime(time));
+        my ($seconds, $microseconds) = Time::HiRes::gettimeofday();
+
+        $timestamp = POSIX::strftime("%Y-%m-%dT%H:%M:%S%z", localtime($seconds));
         $timestamp =~ s/(\d{2})(\d{2})\z/$1:$2/;
         # Fix cases where TZ offset is without sign,
         # as example "2013-02-04T18:05:1400:00"
@@ -735,6 +737,15 @@ sub prepare_message {
         # Hack for Perl 5.8.3 with POSIX 1.07, where strftime
         # %Y-%m-%dT%H:%M:%S%z returns 2013-02-04T17:02:41UTC
         $timestamp =~ s/UTC\z/Z/;
+
+        if ($self->config->{milliseconds}) {
+            if (length $microseconds < 3) {
+                $microseconds .= "0" x 3 - length $microseconds;
+            }
+            $microseconds =~ s/^(\d\d\d).*/$1/;
+            $timestamp =~ s/\+/.$microseconds+/;
+        }
+
         $event = {
             '@timestamp'   => $timestamp,
             '@source'      => "file://" . $hostname . $input->{path},
@@ -942,6 +953,11 @@ sub validate_config {
             type => Params::Validate::SCALAR,
             default => 100,
         },
+        milliseconds => {
+            type => Params::Validate::SCALAR,
+            default => "no",
+            regex => qr/^(?:yes|no|0|1)\z/,
+        },
         hostname => {
             type => Params::Validate::SCALAR,
             default => Sys::Hostname::hostname(),
@@ -968,8 +984,10 @@ sub validate_config {
         },
     });
 
-    if ($options{benchmark} eq "no") {
-        $options{benchmark} = 0;
+    foreach my $key (qw/benchmark milliseconds/) {
+        if ($options{$key} eq "no") {
+            $options{$key} = 0;
+        }
     }
 
     foreach my $key (qw/output input/) {

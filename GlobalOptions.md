@@ -12,6 +12,18 @@ Print some benchmark statistics to the log file.
 
 Default: no
 
+### milliseconds
+
+Add milliseconds to @timestamp. Usually the timestamp looks like
+
+    2013-11-15 17:46:13+0200
+
+Enable this parameter would generate a timestamp with milliseconds:
+
+    2013-11-15 17:46:13.234+0200
+
+Default: no
+
 ### poll
 
 How often to poll inputs for new events.
