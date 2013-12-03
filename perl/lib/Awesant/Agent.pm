@@ -746,16 +746,30 @@ sub prepare_message {
             $timestamp =~ s/\+/.$microseconds+/;
         }
 
-        $event = {
-            '@timestamp'   => $timestamp,
-            '@source'      => "file://" . $hostname . $input->{path},
-            '@source_host' => $hostname,
-            '@source_path' => $input->{path},
-            '@type'        => $input->{type},
-            '@fields'      => $input->{add_field},
-            '@tags'        => $input->{tags},
-            '@message'     => $line,
-        };
+        if ($self->config->{oldlogstashjson}) {
+            $event = {
+                '@timestamp'   => $timestamp,
+                '@source'      => "file://" . $hostname . $input->{path},
+                '@source_host' => $hostname,
+                '@source_path' => $input->{path},
+                '@type'        => $input->{type},
+                '@fields'      => $input->{add_field},
+                '@tags'        => $input->{tags},
+                '@message'     => $line,
+            };
+        } else {
+            $event = {
+                '@version'    => 1,
+                '@timestamp'  => $timestamp,
+                'source'      => "file://" . $hostname . $input->{path},
+                'source_host' => $hostname,
+                'source_path' => $input->{path},
+                'type'        => $input->{type},
+                'fields'      => $input->{add_field},
+                'tags'        => $input->{tags},
+                'message'     => $line,
+            };
+        }
     };
 
     if ($input->{__add_field}) {
@@ -958,6 +972,11 @@ sub validate_config {
             default => "no",
             regex => qr/^(?:yes|no|0|1)\z/,
         },
+        oldlogstashjson => {
+            type => Params::Validate::SCALAR,
+            default => "yes",
+            regex => qr/^(?:yes|no|0|1)\z/,
+        },
         hostname => {
             type => Params::Validate::SCALAR,
             default => Sys::Hostname::hostname(),
@@ -984,7 +1003,7 @@ sub validate_config {
         },
     });
 
-    foreach my $key (qw/benchmark milliseconds/) {
+    foreach my $key (qw/benchmark milliseconds oldlogstashjson/) {
         if ($options{$key} eq "no") {
             $options{$key} = 0;
         }

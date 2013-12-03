@@ -18,7 +18,7 @@ Add milliseconds to @timestamp. Usually the timestamp looks like
 
     2013-11-15 17:46:13+0200
 
-Enable this parameter would generate a timestamp with milliseconds:
+Enabling this parameter would generate a timestamp with milliseconds:
 
     2013-11-15 17:46:13.234+0200
 
@@ -41,6 +41,16 @@ Default: 100
 If 100 lines could be read then the agent tries to read the next 100 lines.
 If less than 100 lines could be read then the end of the log file was reached
 and the agent waits 500 ms before the agent tries to read the next lines.
+
+### oldlogstashjson
+
+Use the old or new logstash json schema. The difference is that the '@' sign
+is removed from all fields except '@timestamp' and the '@version' is added
+as new field.
+
+By default awesant uses the old json format.
+
+Default: yes
 
 # Global input and output options
 
