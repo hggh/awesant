@@ -1,4 +1,4 @@
-awesant (0.12) released at XXXX-XX-XX
+awesant (0.12) released at 2013-12-09
 
     * Implemented a failover mechanism for the redis output.
     * The hostname can now be set in the configuration file.
@@ -7,7 +7,7 @@ awesant (0.12) released at XXXX-XX-XX
       and new logstash json schema.
     * Added parameter skip for Input/File.pm to skip events.
 
-awesant (0.11) released at 2012-08-30
+awesant (0.11) released at 2013-08-30
 
     * Added option ssl_verify_mode to Input/Socket.pm and Output/Socket.pm.
     * Fixed dependencies of Awesant. Class::Accessor was missed.

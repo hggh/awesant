@@ -362,13 +362,13 @@ sub _check_event {
     my ($self, $event) = @_;
     my $skip = $self->{skip};
 
-    foreach my $regex {
-        if ($line =~ /$regex/) {
-            return 1;
+    foreach my $regex (@$skip) {
+        if ($event =~ /$regex/) {
+            return 0;
         }
     }
 
-    return 0;
+    return 1;
 }
 
 1;
