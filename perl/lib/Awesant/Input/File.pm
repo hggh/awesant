@@ -25,6 +25,21 @@ you should configure delayed compression for log files.
 
 The path to the log file.
 
+=head2 skip
+
+Define regexes to skip events.
+
+    input {
+        file {
+            type php-error-log
+            path /var/log/php/error.log
+            skip PHP (Notice|Warning)
+            skip ^any event$
+        }
+    }
+
+Lines that match the regexes will be skipped.
+
 =head2 save_position
 
 Experimental feature.
@@ -260,6 +275,7 @@ sub check_logfile {
 
 sub pull {
     my ($self, %opts) = @_;
+    my $skip = $self->{skip};
 
     local $SIG{PIPE} = "IGNORE";
 
@@ -271,7 +287,11 @@ sub pull {
 
     while (my $line = <$fhlog>) {
         chomp $line;
-        push @$lines, $line;
+
+        if (!$skip || $self->_check_event($line)) {
+            push @$lines, $line;
+        }
+
         #$self->log->debug("read", length($line), "bytes from file");
         last unless --$max_lines;
     }
@@ -315,7 +335,15 @@ sub validate {
         path => {
             type => Params::Validate::SCALAR,
         },
+        skip => {
+            type => Params::Validate::SCALAR || Params::Validate::ARRAYREF,
+            default => undef
+        }
     });
+
+    if (defined $options{skip} && ref $options{skip} ne "ARRAY") {
+        $options{skip} = [ $options{skip} ];
+    }
 
     if ($options{save_position} eq "no") {
         $options{save_position} = 0;
@@ -328,6 +356,19 @@ sub log {
     my $self = shift;
 
     return $self->{log};
+}
+
+sub _check_event {
+    my ($self, $event) = @_;
+    my $skip = $self->{skip};
+
+    foreach my $regex {
+        if ($line =~ /$regex/) {
+            return 1;
+        }
+    }
+
+    return 0;
 }
 
 1;

@@ -11,6 +11,21 @@ you should configure delayed compression for log files.
 
 The path to the log file.
 
+### skip
+
+Define regexes to skip events.
+
+    input {
+        file {
+            type php-error-log
+            path /var/log/php/error.log
+            skip PHP (Notice|Warning)
+            skip ^any event$
+        }
+    }
+
+Lines that match the regexes will be skipped.
+
 ### save_position
 
 Experimental feature.
