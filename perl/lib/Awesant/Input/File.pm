@@ -336,7 +336,7 @@ sub validate {
             type => Params::Validate::SCALAR,
         },
         skip => {
-            type => Params::Validate::SCALAR || Params::Validate::ARRAYREF,
+            type => Params::Validate::SCALAR | Params::Validate::ARRAYREF,
             default => undef
         }
     });
