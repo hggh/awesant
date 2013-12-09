@@ -1,6 +1,6 @@
 Summary: Awesant is a log shipper for logstash.
 Name: awesant
-Version: 0.11
+Version: 0.12
 Release: 1%{?dist}
 License: distributable
 Group: System Environment/Daemons
@@ -86,6 +86,13 @@ rm -rf %{buildroot}
 %{_mandir}/man?/Awesant::*
 
 %changelog
+* Mon Dec 09 2013 Jonny Schulz <js@bloonix.de> - 0.12-1
+- Implemented a failover mechanism for the redis output.
+- The hostname can now be set in the configuration file.
+- Added parameter milliseconds for @timestamp.
+- Added parameter oldlogstashjson to switch between the old
+  and new logstash json schema.
+- Added parameter skip for Input/File.pm to skip events.
 * Fri Aug 30 2013 Jonny Schulz <js@bloonix.de> - 0.11-1
 - Added option ssl_verify_mode to Input/Socket.pm and Output/Socket.pm.
 - Fixed dependencies of Awesant. Class::Accessor was missed.
