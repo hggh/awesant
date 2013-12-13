@@ -9,7 +9,14 @@ you should configure delayed compression for log files.
 
 ### path
 
-The path to the log file.
+The path to the log file. Multiple paths can be set comma separated.
+
+    input {
+        file {
+            type syslog
+            path /var/log/messages, /var/log/syslog
+        }
+    }
 
 ### skip
 
