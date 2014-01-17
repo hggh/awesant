@@ -1091,9 +1091,16 @@ sub validate_agent_config {
 
             # The code generation. I'm sorry that it's a bit unreadable.
             my $func = "sub { my (\$e) = \@_; if (\$e->{'$ref->{field}'} =~ m!$ref->{match}!) { ";
-            $func .= "\$e->{'\@fields'}->{'$field'} = \"$ref->{concat}\"; }";
-            if (defined $ref->{default}) {
-                $func .= " else { \$e->{'\@fields'}->{'$field'} = '$ref->{default}'; } ";
+            if ($self->config->{oldlogstashjson}) {
+                $func .= "\$e->{'\@fields'}->{'$field'} = \"$ref->{concat}\"; }";
+                if (defined $ref->{default}) {
+                    $func .= " else { \$e->{'\@fields'}->{'$field'} = '$ref->{default}'; } ";
+                }
+            } else {
+                $func .= "\$e->{'$field'} = \"$ref->{concat}\"; }";
+                if (defined $ref->{default}) {
+                    $func .= " else { \$e->{'$field'} = '$ref->{default}'; } ";
+                }
             }
             $func .= "}";
 
