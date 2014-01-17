@@ -76,9 +76,11 @@ Since v0.11 it is possible to use '*' to match all types.
 
 This option is equivalent to the option 'format' of logstash inputs.
 
-Possible values: "plain", "json_event"
+Possible values: "plain", "json"
 
-If the format is a json_event, then all necessary key-value pairs should exists.
+The value "json_event" is possible for backward compability.
+
+If the format is a json, then all necessary key-value pairs should exists.
 
     Example for a file input (/var/log/httpd/access.log):
 
@@ -122,7 +124,7 @@ Example:
         type logstash
         host 127.0.0.1
         port 4711
-        format json_event
+        format json
         workers 20
     }
 
