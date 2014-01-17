@@ -711,6 +711,10 @@ sub prepare_message {
     my ($event, $type, $timestamp);
     my $hostname = $self->config->{hostname};
 
+    my ($type_alias, $tags_alias, $fields_alias) = $self->config->{oldlogstashjson}
+        ? ('@type', '@tags', '@fields')
+        : ('type', 'tags', 'fields');
+
     $self->log->debug("prepare message for input type $input->{type} path $input->{path}");
     $self->log->debug("event: $line");
 
@@ -721,10 +725,10 @@ sub prepare_message {
             $self->log->error($line);
             return ();
         }
-        $event->{'@type'} ||= $input->{type};
-        push @{$event->{'@tags'}}, @{$input->{tags}};
+        $event->{$type_alias} ||= $input->{type};
+        push @{$event->{$tags_alias}}, @{$input->{tags}};
         foreach my $field (keys %{$input->{add_field}}) {
-            $event->{'@fields'}->{$field} = $input->{add_field}->{$field};
+            $event->{$fields_alias}->{$field} = $input->{add_field}->{$field};
         }
     } elsif ($input->{format} eq "plain") {
         my ($seconds, $microseconds) = Time::HiRes::gettimeofday();
@@ -738,7 +742,7 @@ sub prepare_message {
         # %Y-%m-%dT%H:%M:%S%z returns 2013-02-04T17:02:41UTC
         $timestamp =~ s/UTC\z/Z/;
 
-        if ($self->config->{milliseconds}) {
+        if ($self->config->{milliseconds} || !$self->config->{oldlogstashjson}) {
             if (length $microseconds < 3) {
                 $microseconds .= "0" x (3 - length $microseconds);
             }
@@ -778,7 +782,7 @@ sub prepare_message {
         }
     }
 
-    return ($event->{'@type'}, $self->json->encode($event));
+    return ($event->{$type_alias}, $self->json->encode($event));
 }
 
 sub log_watch {
