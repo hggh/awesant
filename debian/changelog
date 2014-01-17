@@ -1,3 +1,10 @@
+awesant (0.13-1) unstable; urgency=low
+
+    * Awesant is ready for the new logstash json schema.
+    * oldlogstashjson is now set to 'no' by default.
+
+ -- Jonny Schulz <js@bloonix.de>  Fri, 17 Jan 2014 13:00:00 +0100
+
 awesant (0.12-1) unstable; urgency=low
 
     * Implemented a failover mechanism for the redis output.
@@ -6,6 +13,8 @@ awesant (0.12-1) unstable; urgency=low
     * Added parameter oldlogstashjson to switch between the old
       and new logstash json schema.
     * Added parameter skip for Input/File.pm to skip events.
+
+ -- Jonny Schulz <js@bloonix.de>  Mon, 09 Dec 2013 00:00:00 +0100
 
 awesant (0.11-1) unstable; urgency=low
 

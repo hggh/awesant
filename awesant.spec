@@ -1,6 +1,6 @@
 Summary: Awesant is a log shipper for logstash.
 Name: awesant
-Version: 0.12
+Version: 0.13
 Release: 1%{?dist}
 License: distributable
 Group: System Environment/Daemons
@@ -86,6 +86,9 @@ rm -rf %{buildroot}
 %{_mandir}/man?/Awesant::*
 
 %changelog
+* Fri Jan 17 2014 Jonny Schulz <js@bloonix.de> - 0.13-1
+- Awesant is ready for the new logstash json schema.
+- oldlogstashjson is now set to 'no' by default.
 * Mon Dec 09 2013 Jonny Schulz <js@bloonix.de> - 0.12-1
 - Implemented a failover mechanism for the redis output.
 - The hostname can now be set in the configuration file.

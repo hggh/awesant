@@ -206,7 +206,7 @@ If you want to match all input types you can use a wildcard as output type:
     }
 
 When the log events are pushed to the output the type of the input is used for
-the JSON event. This means that '@type' is set to the type of the input, not of
+the JSON event. This means that 'type' is set to the type of the input, not of
 the output.
 
 # SSL and authentication support

@@ -1,3 +1,8 @@
+awesant (0.13) released at 2014-01-17
+
+    * Awesant is ready for the new logstash json schema.
+    * oldlogstashjson is now set to 'no' by default.
+
 awesant (0.12) released at 2013-12-09
 
     * Implemented a failover mechanism for the redis output.

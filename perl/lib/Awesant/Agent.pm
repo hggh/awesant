@@ -205,7 +205,7 @@ use constant PARENT_PID => $$;
 # Just some simple accessors
 __PACKAGE__->mk_accessors(qw/config log json watch filed inputs outputs/);
 
-our $VERSION = "0.12";
+our $VERSION = "0.13";
 
 sub run {
     my ($class, %args) = @_;
@@ -718,7 +718,7 @@ sub prepare_message {
     $self->log->debug("prepare message for input type $input->{type} path $input->{path}");
     $self->log->debug("event: $line");
 
-    if ($input->{format} eq "json_event") {
+    if ($input->{format} eq "json") {
         eval { $event = $self->json->decode($line) };
         if ($@) {
             $self->log->error("unable to decode json event for input $input->{type}:", $@);
@@ -984,7 +984,7 @@ sub validate_config {
         },
         oldlogstashjson => {
             type => Params::Validate::SCALAR,
-            default => "yes",
+            default => "no",
             regex => qr/^(?:yes|no|0|1)\z/,
         },
         hostname => {
@@ -1045,7 +1045,7 @@ sub validate_agent_config {
         },
         format => {
             type => Params::Validate::SCALAR,
-            regex => qr/^(?:plain|json_event)\z/,  
+            regex => qr/^(?:plain|json_event|json)\z/,  
             default => "plain",
         },
         add_field => {
@@ -1068,6 +1068,10 @@ sub validate_agent_config {
             default => 0,
         },
     });
+
+    if ($options{formet} eq "json_event") {
+        $options{format} = "json";
+    }
 
     # add_field => {
     #     domain => {
