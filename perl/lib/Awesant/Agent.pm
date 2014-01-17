@@ -728,7 +728,11 @@ sub prepare_message {
         $event->{$type_alias} ||= $input->{type};
         push @{$event->{$tags_alias}}, @{$input->{tags}};
         foreach my $field (keys %{$input->{add_field}}) {
-            $event->{$fields_alias}->{$field} = $input->{add_field}->{$field};
+            if ($self->config->{oldlogstashjson}) {
+                $event->{$fields_alias}->{$field} = $input->{add_field}->{$field};
+            } else {
+                $event->{$field} = $input->{add_field}->{$field};
+            }
         }
     } elsif ($input->{format} eq "plain") {
         my ($seconds, $microseconds) = Time::HiRes::gettimeofday();
@@ -769,10 +773,12 @@ sub prepare_message {
                 'source_host' => $hostname,
                 'source_path' => $input->{path},
                 'type'        => $input->{type},
-                'fields'      => $input->{add_field},
                 'tags'        => $input->{tags},
                 'message'     => $line,
             };
+            foreach my $key (%{$input->{add_field}}) {
+                $event->{$key} = $input->{add_field}->{$key};
+            }
         }
     };
 
