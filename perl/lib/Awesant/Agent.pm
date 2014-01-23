@@ -1100,7 +1100,7 @@ sub validate_agent_config {
             my $ref = $options{__add_field}{$field};
 
             # The code generation. I'm sorry that it's a bit unreadable.
-            my $func = "sub { my (\$e) = \@_; if (\$e->{'$ref->{field}'} =~ m!$ref->{match}!) { ";
+            my $func = "sub { my (\$e) = \@_; if (defined \$e->{'$ref->{field}'} && \$e->{'$ref->{field}'} =~ m!$ref->{match}!) { ";
             if ($self->config->{oldlogstashjson}) {
                 $func .= "\$e->{'\@fields'}->{'$field'} = \"$ref->{concat}\"; }";
                 if (defined $ref->{default}) {
