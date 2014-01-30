@@ -1069,7 +1069,7 @@ sub validate_agent_config {
         },
     });
 
-    if ($options{formet} eq "json_event") {
+    if ($options{format} eq "json_event") {
         $options{format} = "json";
     }
 
