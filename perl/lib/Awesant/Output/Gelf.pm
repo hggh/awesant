@@ -169,9 +169,16 @@ sub push {
     my $json = JSON->new->utf8();
     my $data = $json->decode($line);
     my $source = $data->{'source_host'};
-    
+
     if ($self->{source} ne "") {
       $source = $self->{source};
+    }
+
+    my %extra_fields;
+    foreach my $key (keys(%{$data})) {
+      if ($key =~ /^_.*/) {
+        $extra_fields{$key} = $data->{$key};
+      }
     }
     my $gelf_event = {
       'version' => '1.1',
@@ -179,8 +186,7 @@ sub push {
       'short_message' => $data->{'message'},
       'level' => '1',
       'facility' => $self->{facility},
-      
-      
+      %extra_fields
     };
 
     my $gelf_json = $json->encode($gelf_event);
@@ -197,10 +203,10 @@ sub push {
       $self->log->error("GELF messages is greater then 8192 bytes. use gzip or add chunk support.");
       return 1;
     }
-   
+
     $ret = $self->_send($gelf_json);
     undef($gelf_json);
-   
+
     return 1;
 }
 
