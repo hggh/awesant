@@ -3,8 +3,8 @@ Section: net
 Priority: extra
 Maintainer: Jonny Schulz <js@bloonix.de>
 Build-Depends: debhelper (>= 7.0.50~),
- liblog-handler-perl, 
- libparams-validate-perl, 
+ liblog-handler-perl,
+ libparams-validate-perl,
  libjson-perl,
  libclass-accessor-perl,
  libsys-hostname-long-perl,
