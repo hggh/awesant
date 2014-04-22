@@ -50,7 +50,7 @@ Add comments to the configuration to explain parameter:
 
 =head2 HASHES VS ARRRAYS
 
-Please note that if a hash key exists that the values will be pushed into an array:
+Please not that if a hash key exists that the values will be pushed into an array:
 
     param1 value
     param2 value1
@@ -76,6 +76,15 @@ is
         { param => "value" }
     ]
 
+=head2 INCLUDE
+
+It's possible to include configuration files.
+
+    param1 value
+    param2 value
+    include /etc/myapp/another-config.conf
+    param3 value
+
 =head1 FUNCTIONS
 
 =head2 C<parse>
@@ -83,25 +92,13 @@ is
 Pass the configuration file as argument and a hash reference with the
 parsed configuration will be returned.
 
-=head1 PREREQUISITES
-
-No prerequisites.
-
-=head1 EXPORTS
-
-No exports.
-
-=head1 REPORT BUGS
-
-Please report all bugs to <support(at)bloonix.de>.
-
 =head1 AUTHOR
 
 Jonny Schulz <support(at)bloonix.de>.
 
 =head1 COPYRIGHT
 
-Copyright (C) 2012 by Jonny Schulz. All rights reserved.
+Copyright (C) 2014 by Jonny Schulz. All rights reserved.
 
 =cut
 
@@ -109,19 +106,39 @@ package Awesant::Config;
 
 use strict;
 use warnings;
+use constant IS_WIN32 => $^O =~ /Win32/i ? 1 : 0;
+use constant DIRDELIM => IS_WIN32 ? "\\" : "/";
 
 sub parse {
-    my ($class, $file) = @_;
+    my ($class, $file, $enc) = @_;
 
-    open my $fh, "<", $file
-        or die "Unable to open file '$file' for reading - $!";
+    # Safe the path to the file. The path is
+    # used to include further configuration files.
+    my $path = $file;
+    $path =~ s![^/\\]+$!!;
 
+    # Create the object.
+    my $self = bless { path => $path }, $class;
+
+    # The $config will be returned as a hash reference.
     my $config = { };
 
-    $class->_parse_config($fh, $config);
+    # Go go go ...
+    $self->_include_config($file, $config, $enc);
+
+    return $config;
+}
+
+sub _include_config {
+    my ($self, $file, $config, $enc) = @_;
+    my $d = $enc ? "<:$enc" : "<";
+
+    open my $fh, $d, $file
+        or die "Unable to open file '$file' for reading - $!";
+
+    $self->_parse_config($fh, $config);
 
     close $fh;
-    return $config;
 }
 
 sub _parse_config {
@@ -133,11 +150,11 @@ sub _parse_config {
         # and whitespaces from the begin and the end
         # of each line.
         $line =~ s/[\r\n]+\z//;
-        $line =~ s/^\s*#.*//;
         $line =~ s/\s+#.+//;
+        $line =~ s/^\s*#.*//;
         $line =~ s/\\#/#/g;
-        $line =~ s/^\s+//;
-        $line =~ s/\s+\z//;
+        $line =~ s/^\s*//;
+        $line =~ s/\s*\z//;
 
         # Comments and whitespaces was removed.
         # Empty lines will be ignored.
@@ -154,18 +171,16 @@ sub _parse_config {
         # then the raw line will be stored as value.
         if ($is_multiline) {
             $value = $line;
-        }
 
         # If a line begins with "keyword {" then it's a sub-section.
-        elsif ($line =~ /^([^\s]+)\s*\{/) {
+        } elsif ($line =~ /^([^\s]+)\s*\{/) {
             ($key, $value) = ($1, { });
             $self->_add_key_value($config, $key, $value);
             $self->_parse_config($fh, $value);
             next;
-        }
 
         # A key value pair. The value can be an empty string.
-        elsif ($line =~ /^([^\s]+)\s*(.*)/) {
+        } elsif ($line =~ /^([^\s]+)\s*(.*)/) {
             ($key, $value) = ($1, $2);
         }
 
@@ -197,9 +212,14 @@ sub _parse_config {
 }
 
 sub _add_key_value {
-    my ($class, $config, $key, $value) = @_;
+    my ($self, $config, $key, $value) = @_;
 
-    if (!exists $config->{$key}) {
+    if ($key eq "include") {
+        if ($self->{path} && $value !~ m!^(/|[a-z]:\\)!i) {
+            $value = join(DIRDELIM, $self->{path}, $value);
+        }
+        $self->_include_config($value, $config);
+    } elsif (!exists $config->{$key}) {
         $config->{$key} = $value;
     } elsif (ref $config->{$key} eq "ARRAY") {
         push @{$config->{$key}}, $value;
