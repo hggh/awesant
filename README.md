@@ -54,12 +54,10 @@ Just download the project and execute
 
 Or create an RPM with
 
-    VERSION=v0.10
-    git clone https://github.com/bloonix/awesant.git
-    cd awesant
-    git checkout $VERSION
-    tar -czf awesant-$version.tar.gz awesant-$version
-    rpmbuild -ta awesant-$version.tar.gz
+    VERSION=0.13
+    git clone https://github.com/bloonix/awesant.git -b v$VERSION awesant-$VERSION
+    tar -czf awesant-$VERSION.tar.gz awesant-$VERSION
+    rpmbuild -ta awesant-$VERSION.tar.gz
     rpm -i rpmbuild/RPMS/noarch/awesant...
 
 Or create a deb-package with
