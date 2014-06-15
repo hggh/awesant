@@ -1,3 +1,8 @@
+awesant (0.14) released at 2014-XX-XX
+
+    * Added parameter 'grep' for Input/File.pm to skip events that
+      does not match.
+
 awesant (0.13) released at 2014-01-17
 
     * Awesant is ready for the new logstash json schema.
@@ -10,7 +15,7 @@ awesant (0.12) released at 2013-12-09
     * Added parameter milliseconds for @timestamp.
     * Added parameter oldlogstashjson to switch between the old
       and new logstash json schema.
-    * Added parameter skip for Input/File.pm to skip events.
+    * Added parameter 'skip' for Input/File.pm to skip events.
 
 awesant (0.11) released at 2013-08-30
 

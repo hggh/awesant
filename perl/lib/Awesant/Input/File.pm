@@ -94,6 +94,10 @@ Validate the configuration that is passed to the C<new> constructor.
 
 Just a accessor to the logger.
 
+=head2 check_event
+
+This method is call for each event and checks filters the event by options C<skip> and C<grep>.
+
 =head1 PREREQUISITES
 
     Fcntl
@@ -282,7 +286,6 @@ sub check_logfile {
 
 sub pull {
     my ($self, %opts) = @_;
-    my $skip = $self->{skip};
 
     local $SIG{PIPE} = "IGNORE";
 
@@ -295,7 +298,7 @@ sub pull {
     while (my $line = <$fhlog>) {
         chomp $line;
 
-        if (!$skip || $self->_check_event($line)) {
+        if ($self->check_event($line)) {
             push @$lines, $line;
         }
 
@@ -327,17 +330,17 @@ sub validate {
     my %options = Params::Validate::validate(@_, {
         libdir => {
             type => Params::Validate::SCALAR,
-            default => "/var/lib/awesant",
+            default => "/var/lib/awesant"
         },
         start_position => {
             type => Params::Validate::SCALAR,
             default => "end",
-            regex => qr/^(begin|end)\z/,
+            regex => qr/^(begin|end)\z/
         },
         save_position => {
             type => Params::Validate::SCALAR,
             default => 0,
-            regex => qr/^(?:yes|no|1|0)\z/,
+            regex => qr/^(?:yes|no|1|0)\z/
         },
         path => {
             type => Params::Validate::SCALAR,
@@ -345,11 +348,17 @@ sub validate {
         skip => {
             type => Params::Validate::SCALAR | Params::Validate::ARRAYREF,
             default => undef
+        },
+        grep => {
+            type => Params::Validate::SCALAR | Params::Validate::ARRAYREF,
+            default => undef
         }
     });
 
-    if (defined $options{skip} && ref $options{skip} ne "ARRAY") {
-        $options{skip} = [ $options{skip} ];
+    foreach my $key (qw/skip grep/) {
+        if (defined $options{$key} && ref $options{$key} ne "ARRAY") {
+            $options{$key} = [ $options{$key} ];
+        }
     }
 
     if ($options{save_position} eq "no") {
@@ -365,14 +374,24 @@ sub log {
     return $self->{log};
 }
 
-sub _check_event {
+sub check_event {
     my ($self, $event) = @_;
-    my $skip = $self->{skip};
 
-    foreach my $regex (@$skip) {
-        if ($event =~ /$regex/) {
-            return 0;
+    if ($self->{skip}) {
+        foreach my $regex (@{$self->{skip}}) {
+            if ($event =~ /$regex/) {
+                return 0;
+            }
         }
+    }
+
+    if ($self->{grep}) {
+        foreach my $regex (@{$self->{grep}}) {
+            if ($event =~ /$regex/) {
+                return 1;
+            }
+        }
+        return 0;
     }
 
     return 1;
